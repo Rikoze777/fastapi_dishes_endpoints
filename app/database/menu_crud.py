@@ -1,17 +1,22 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from .models import Menu
-from .schemas import MenuCreate
-from utils.exceptions import MenuException
+from .models import Menu, Submenu
+from .schemas import MenuCreate, MenuUpdate
+from fastapi import HTTPException
 
 
 def get_menu(db: Session, id: str):
     menu = db.query(Menu).filter(Menu.id == id).first()
-    if not menu:
-        raise MenuException(id)
     result = jsonable_encoder(menu)
-    result['submenus_count'] = 0
-    result['dishes_count'] = 0
+    if not menu:
+        raise HTTPException(status_code=404, detail="Меню не найдено")
+    submenus = db.query(Submenu).filter(Submenu.menu_id == id).all()
+    if not submenus:
+        result['submenus_count'] = 0
+        result['dishes_count'] = 0
+    else:
+        result['submenus_count'] = len(submenus)
+        result['dishes_count'] = 0
     return result
 
 
@@ -31,7 +36,7 @@ def create_menu(db: Session, menu: MenuCreate):
     return new_menu
 
 
-def update_menu(db: Session, id: str, update_menu: MenuCreate):
+def update_menu(db: Session, id: str, update_menu: MenuUpdate):
     db_menu = db.query(Menu).filter(Menu.id == id).first()
     db_menu.title = update_menu.title
     db_menu.description = update_menu.description
