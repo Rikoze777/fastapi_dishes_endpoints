@@ -70,7 +70,7 @@ make install
 
 - Выполните команду по запуску приложения:
 ```bash
-uvicorn app.main:app --reload
+poetry run uvicorn app.main:app --reload
 ```
 
 - Или же выполните запуск приложения командой make:
