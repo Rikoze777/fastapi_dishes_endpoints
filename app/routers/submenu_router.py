@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from database import submenu_crud, schemas
-from database.db import get_db
+from app.database import submenu_crud, schemas
+from app.database.db import get_db
 from fastapi.responses import JSONResponse
+from pydantic import UUID4
 
 
 router = APIRouter(
@@ -17,9 +18,9 @@ router = APIRouter(
     response_model=List[schemas.Submenu],
     name="Просмотр списка подменю",
 )
-def get_submenu_list(menu_id: str, db: Session = Depends(get_db)):
-    return submenu_crud.get_submenu_list(db, menu_id)
-
+def get_submenu_list(menu_id: UUID4, db: Session = Depends(get_db)):
+    list_sub = submenu_crud.get_submenu_list(db, menu_id)
+    return list_sub
 
 @router.post(
     "/{menu_id}/submenus",
@@ -27,9 +28,9 @@ def get_submenu_list(menu_id: str, db: Session = Depends(get_db)):
     name='Создать подменю',
     status_code=201,
 )
-def add_submenu(menu_id: str, data: schemas.SubmenuCreate, db: Session = Depends(get_db)):
-    return submenu_crud.create_submenu(db, menu_id, data)
-    # return submenu_crud.get_submenu(db, menu_id, submenu.id)
+def add_submenu(menu_id: UUID4, data: schemas.SubmenuCreate, db: Session = Depends(get_db)):
+    submenu = submenu_crud.create_submenu(db, menu_id, data)
+    return submenu
 
 
 @router.get(
@@ -37,10 +38,11 @@ def add_submenu(menu_id: str, data: schemas.SubmenuCreate, db: Session = Depends
     response_model=schemas.Submenu,
     name="Просмотр подменю по id",
 )
-def get_submenu(menu_id: str, submenu_id: str, db: Session = Depends(get_db)):
-    submenu = submenu_crud.get_submenu(db, menu_id, submenu_id)
-    if not submenu:
-        raise HTTPException(status_code=404, detail="Подменю не найдено")
+def get_submenu(menu_id: UUID4, submenu_id: UUID4, db: Session = Depends(get_db)):
+    try:
+        submenu = submenu_crud.get_sub(db, menu_id, submenu_id)
+    except:
+        raise HTTPException(status_code=404, detail="submenu not found")
     return submenu
 
 
@@ -49,19 +51,20 @@ def get_submenu(menu_id: str, submenu_id: str, db: Session = Depends(get_db)):
     response_model=schemas.Submenu,
     name="Обновить подменю",
 )
-def update_submenu(menu_id: str, submenu_id: str, data: schemas.SubmenuUpdate, db: Session = Depends(get_db)):
-    submenu = submenu_crud.get_submenu(db, menu_id, submenu_id)
-    if not submenu:
-        raise HTTPException(status_code=404, detail="Подменю не найдено")
+def update_submenu(menu_id: UUID4, submenu_id: UUID4, data: schemas.SubmenuUpdate, db: Session = Depends(get_db)):
+    try:
+        submenu = submenu_crud.get_sub(db, menu_id, submenu_id)
+    except:
+        raise HTTPException(status_code=404, detail="submenu not found")
     update_submenu = submenu_crud.update_submenu(db, menu_id, submenu_id, data)
-    return submenu_crud.get_submenu(db, menu_id, update_submenu.id)
+    return update_submenu
 
 
 @router.delete(
     "/{menu_id}/submenus/{submenu_id}/",
     name="Удаление подменю",
 )
-def delete_submenu(menu_id: str, submenu_id: str, db: Session = Depends(get_db)):
+def delete_submenu(menu_id: UUID4, submenu_id: UUID4, db: Session = Depends(get_db)):
     submenu_crud.delete_submenu(db, menu_id, submenu_id)
     return JSONResponse(
         status_code=200,

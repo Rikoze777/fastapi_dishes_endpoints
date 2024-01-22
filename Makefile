@@ -4,7 +4,7 @@ install:
 	poetry install
 
 run:
-	poetry run uvicorn main:app --reload
+	poetry run uvicorn app.main:app --reload
 
 # Remove generated files and directories
 clean:

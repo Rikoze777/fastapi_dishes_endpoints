@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from database import menu_crud, schemas
-from database.db import get_db
+from app.database import menu_crud, schemas
+from app.database.db import get_db
 from fastapi.responses import JSONResponse
+from pydantic import UUID4
 
 
 router = APIRouter(
@@ -37,10 +38,11 @@ def add_menu(data: schemas.MenuCreate, db: Session = Depends(get_db)):
     response_model=schemas.Menu,
     name="Меню по id",
 )
-def get_menu(id: str, db: Session = Depends(get_db)):
-    menu = menu_crud.get_menu(db, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="Меню не найдено")
+def get_menu(id: UUID4, db: Session = Depends(get_db)):
+    try:
+        menu = menu_crud.get_menu(db, id)
+    except:
+        raise HTTPException(status_code=404, detail="menu not found")
     return menu
 
 
@@ -49,7 +51,7 @@ def get_menu(id: str, db: Session = Depends(get_db)):
     response_model=schemas.Menu,
     name="Обновить меню",
 )
-def update_menu(id: str, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
+def update_menu(id: UUID4, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
     menu = menu_crud.get_menu(db, id)
     if not menu:
         raise HTTPException(status_code=404, detail="Меню не найдено")
@@ -61,7 +63,7 @@ def update_menu(id: str, data: schemas.MenuUpdate, db: Session = Depends(get_db)
     "/menus/{id}/",
     name="Удалить меню",
 )
-def delete_menu(id: str, db: Session = Depends(get_db)):
+def delete_menu(id: UUID4, db: Session = Depends(get_db)):
     menu_crud.delete_menu(db, id)
     return JSONResponse(
         status_code=200,
