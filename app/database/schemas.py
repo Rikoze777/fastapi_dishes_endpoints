@@ -1,19 +1,17 @@
+from typing import Union
 from pydantic import BaseModel
-from uuid import UUID
-from typing import Optional
+from pydantic import UUID4
 
 
 class Menu(BaseModel):
-    id: UUID
+    id: UUID4
     title: str
     description: str
     submenus_count: int
     dishes_count: int
-    submenus_count: Optional[int]
-    dishes_count: Optional[int]
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class MenuCreate(BaseModel):
@@ -27,19 +25,18 @@ class MenuUpdate(BaseModel):
 
 
 class Submenu(BaseModel):
-    id: UUID
+    id: UUID4
     title: str
     description: str
     dishes_count: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class SubmenuCreate(BaseModel):
     title: str
     description: str
-    dishes_count: int
 
 
 class SubmenuUpdate(BaseModel):
@@ -48,17 +45,28 @@ class SubmenuUpdate(BaseModel):
 
 
 class Dishes(BaseModel):
-    id: str
+    id: UUID4
     title: str
     description: str
-    price: float
+    price: str
 
     class Config:
-        from_attributes = True
-
+        orm_mode = True
 
 
 class DishesCreate(BaseModel):
     title: str
     description: str
-    price: float
+    price: Union[str, float]
+
+    class Config:
+        orm_mode = True
+
+
+class DishesUpdate(BaseModel):
+    title: str
+    description: str
+    price: Union[str, float]
+
+    class Config:
+        orm_mode = True

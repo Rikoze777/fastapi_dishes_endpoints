@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from database import dishes_crud, schemas
-from database.db import get_db
+from app.database import dishes_crud, schemas
+from app.database.db import get_db
 from fastapi.responses import JSONResponse
+from pydantic import UUID4
 
 
 router = APIRouter(
@@ -11,60 +12,65 @@ router = APIRouter(
     prefix="/api/v1/menus/{menu_id}/submenus/{submenu_id}",
 )
 
+
 @router.get(
     "/dishes",
     response_model=List[schemas.Dishes],
     name="Список блюд",
 )
-def get_dishes_list(menu_id: int, submenu_id: int, db: Session = Depends(get_db)):
-    return dishes_crud.get_dishes_list(db, submenu_id)
+def get_dishes_list(menu_id: UUID4, submenu_id: UUID4, db: Session = Depends(get_db)):
+    dishes_list = dishes_crud.get_dishes_list(db, submenu_id)
+    for dish in dishes_list:
+        dish.price = "{:.2f}".format(float(dish.price))
+    return dishes_list
 
 
-# Просмотр определенного блюда
 @router.get(
     "/dishes/{id}",
     response_model=schemas.Dishes,
     name="Блюдо по id",
 )
-def get_dish(submenu_id: int, id: int, db: Session = Depends(get_db)):
-    dish = dishes_crud.get_dish(db, submenu_id, id)
-    if not dish:
-        raise HTTPException(status_code=404, detail="Блюдо не найдено")
+def get_dish(submenu_id: UUID4, id: UUID4, db: Session = Depends(get_db)):
+    try:
+        dish = dishes_crud.get_dish(db, submenu_id, id)
+    except:
+        raise HTTPException(status_code=404, detail="dish not found")
+    dish.price = "{:.2f}".format(float(dish.price))
     return dish
 
 
-# Создать блюдо
 @router.post(
     "/dishes",
     response_model=schemas.Dishes,
     name='Создать блюдо',
     status_code=201,
 )
-def add_dish(menu_id: int, submenu_id: int, data: schemas.DishesCreate, db: Session = Depends(get_db)):
+def add_dish(submenu_id: UUID4, data: schemas.DishesCreate, db: Session = Depends(get_db)):
     dish = dishes_crud.create_dish(db, submenu_id, data)
-    return dishes_crud.get_dish(db, submenu_id, dish.id)
+    dish.price = str("{:.2f}".format(float(dish.price)))
+    return dish
 
 
-# Обновить блюдо
 @router.patch(
     "/dishes/{id}",
     response_model=schemas.Dishes,
     name="Обновить блюдо",
 )
-def update_dish(menu_id: int, submenu_id: int, id: int, data: schemas.DishesCreate, db: Session = Depends(get_db)):
-    dish = dishes_crud.get_dish(db, submenu_id, id)
-    if not dish:
-        raise HTTPException(status_code=404, detail="Блюдо не найдено")
-    update_dish = dishes_crud.update_dish(db, submenu_id, id, data)
-    return dishes_crud.get_dish(db, submenu_id, update_dish.id)
+def update_dish(submenu_id: UUID4, id: UUID4, data: schemas.DishesUpdate, db: Session = Depends(get_db)):
+    try:
+        dish = dishes_crud.get_dish(db, submenu_id, id)
+        updated_dish = dishes_crud.update_dish(db, submenu_id, id, data)
+    except:
+        raise HTTPException(status_code=404, detail="dish not found")
+    updated_dish.price = str("{:.2f}".format(float(dish.price)))
+    return dish
 
 
-# Удаление блюда
 @router.delete(
     "/dishes/{id}",
     name="Удалить блюдо",
 )
-def delete_dish(menu_id: int, submenu_id: int, id: int, db: Session = Depends(get_db)):
+def delete_dish(submenu_id: UUID4, id: UUID4, db: Session = Depends(get_db)):
     dishes_crud.delete_dish(db, submenu_id, id)
     return JSONResponse(
         status_code=200,

@@ -1,22 +1,29 @@
+from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from .models import Menu, Submenu
-from .schemas import MenuCreate, MenuUpdate
-from fastapi import HTTPException
+from pydantic import UUID4
+from app.database.exceptions import MenuExistsException
+from app.database.models import Dishes, Menu, Submenu
+from app.database.schemas import MenuCreate, MenuUpdate
 
 
-def get_menu(db: Session, id: str):
-    menu = db.query(Menu).filter(Menu.id == id).first()
-    result = jsonable_encoder(menu)
+def get_menu(db: Session, id: UUID4):
+    menu = db.query(Menu).get(id)
     if not menu:
-        raise HTTPException(status_code=404, detail="Меню не найдено")
+        raise MenuExistsException()
+    result = jsonable_encoder(menu)
     submenus = db.query(Submenu).filter(Submenu.menu_id == id).all()
     if not submenus:
         result['submenus_count'] = 0
         result['dishes_count'] = 0
     else:
         result['submenus_count'] = len(submenus)
-        result['dishes_count'] = 0
+        for submenu in submenus:
+            dishes = db.query(Dishes).filter(Dishes.submenu_id == submenu.id).all()
+            if not dishes:
+                result['dishes_count'] = 0
+            else:
+                result['dishes_count'] = len(dishes)
     return result
 
 
@@ -30,22 +37,24 @@ def get_menu_list(db: Session):
 
 
 def create_menu(db: Session, menu: MenuCreate):
-    new_menu = Menu(**menu.model_dump())
+    new_menu = Menu(**menu.dict())
     db.add(new_menu)
     db.commit()
+    db.refresh(new_menu)
     return new_menu
 
 
-def update_menu(db: Session, id: str, update_menu: MenuUpdate):
+def update_menu(db: Session, id: UUID4, update_menu: MenuUpdate):
     db_menu = db.query(Menu).filter(Menu.id == id).first()
     db_menu.title = update_menu.title
     db_menu.description = update_menu.description
     db.add(db_menu)
     db.commit()
+    db.refresh(db_menu)
     return db_menu
 
 
-def delete_menu(db: Session, id: str):
+def delete_menu(db: Session, id: UUID4):
     db_menu = db.query(Menu).filter(Menu.id == id).first()
     db.delete(db_menu)
     db.commit()

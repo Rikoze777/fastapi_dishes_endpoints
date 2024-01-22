@@ -1,50 +1,57 @@
+
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-from .models import Submenu
-from .schemas import SubmenuCreate, SubmenuUpdate
-from fastapi import HTTPException
+from pydantic import UUID4
+from app.database.exceptions import SubmenuExistsException
+from app.database.models import Dishes, Submenu
+from app.database.schemas import SubmenuCreate, SubmenuUpdate
 
 
-def get_submenu(db: Session, menu_id: str, submenu_id: str):
-    submenu = db.query(Submenu).filter(menu_id == menu_id).filter(id == submenu_id).first()
+def get_sub(db: Session, menu_id: UUID4, submenu_id: UUID4):
+    submenu = db.query(Submenu).filter(Submenu.menu_id == menu_id).filter(Submenu.id == submenu_id).first()
     if not submenu:
-        raise HTTPException(status_code=404, detail="Подменю не найдено")
+        raise SubmenuExistsException()
     result = jsonable_encoder(submenu)
-    result['dishes_count'] = 0
-
-
-def get_submenu_list(db: Session, menu_id: str):
-    all_submenu = db.query(Submenu).filter(menu_id == menu_id).all()
-    if not all_submenu:
-        return []
+    dishes = db.query(Dishes).filter(Dishes.submenu_id==submenu_id).all()
+    if not dishes:
+        result['dishes_count'] = 0
     else:
-        list_submenu = [get_submenu(db, menu_id, submenu.id) for submenu in all_submenu]
-        return list_submenu
+        result['dishes_count'] = len(dishes)
+    return result
 
 
-def create_submenu(db: Session, menu_id: str, submenu: SubmenuCreate):
+def get_submenu_list(db: Session, id: UUID4):
+    try:
+        all_submenu = db.query(Submenu).filter(Submenu.menu_id == id).all()
+    except:
+        all_submenu = []
+    return all_submenu
+
+
+def create_submenu(db: Session, menu_id: UUID4, submenu: SubmenuCreate):
     new_submenu = Submenu(**submenu.model_dump())
-    new_submenu.menu_id = menu_id
     new_submenu.dishes_count = 0
-    new_submenu
+    new_submenu.menu_id = menu_id
     db.add(new_submenu)
     db.commit()
+    db.refresh(new_submenu)
     return new_submenu
 
 
-def update_submenu(db: Session, menu_id: str, submenu_id: str, update_submenu: SubmenuUpdate):
+def update_submenu(db: Session, menu_id: UUID4, submenu_id: UUID4, update_submenu: SubmenuUpdate):
     db_submenu = db.query(Submenu).filter(Submenu.menu_id == menu_id).filter(Submenu.id == submenu_id).first()
     if not db_submenu:
-        raise HTTPException(status_code=404, detail="Подменю не найдено")
+        raise SubmenuExistsException()
     else:
         db_submenu.title = update_submenu.title
         db_submenu.description = update_submenu.description
         db.add(db_submenu)
         db.commit()
+        db.refresh(db_submenu)
     return db_submenu
 
 
-def delete_submenu(db: Session, menu_id: str, submenu_id: str):
+def delete_submenu(db: Session, menu_id: UUID4, submenu_id: UUID4):
     db_submenu = db.query(Submenu).filter(Submenu.menu_id == menu_id).filter(Submenu.id == submenu_id).first()
     db.delete(db_submenu)
     db.commit()
