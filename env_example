@@ -1,1 +1,13 @@
-DATABASE_URL="postgresql://username:password@localhost:5432/db_name"
+# Prod database
+PROD_DB_NAME=menu
+PROD_DB_USER=user
+PROD_DB_PASSWORD=qwerty
+PROD_DB_HOST=localhost
+PROD_DB_PORT=5432
+
+# Test database
+TEST_DB_NAME=test
+TEST_DB_USER=user
+TEST_DB_PASSWORD=qwerty
+TEST_DB_HOST=localhost
+TEST_DB_PORT=5432

@@ -10,7 +10,7 @@ from app.config import Config
 
 config = Config()
 
-TESTBASE = config.TESTBASE_URL
+TESTBASE = f"postgresql+psycopg2://{config.TEST_DB_USER}:{config.TEST_DB_PASSWORD}@{config.TEST_DB_HOST}:{config.TEST_DB_PORT}/{config.TEST_DB_NAME}"
 
 engine = create_engine(TESTBASE)
 

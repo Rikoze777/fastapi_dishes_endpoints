@@ -5,7 +5,8 @@ from app.config import Config
 
 config = Config()
 
-engine = create_engine(config.DATABASE_URL)
+DATABASE_URL = f"postgresql+psycopg2://{config.PROD_DB_USER}:{config.PROD_DB_PASSWORD}@{config.PROD_DB_HOST}:{config.PROD_DB_PORT}/{config.PROD_DB_NAME}"
+engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
