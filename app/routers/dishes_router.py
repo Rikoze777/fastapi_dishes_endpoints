@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from app.database import dishes_crud, schemas
+from app.schemas import schemas
+from app.crud import dishes_crud
 from app.database.db import get_db
 from fastapi.responses import JSONResponse
 from pydantic import UUID4

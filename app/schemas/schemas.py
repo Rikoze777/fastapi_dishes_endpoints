@@ -11,7 +11,7 @@ class Menu(BaseModel):
     dishes_count: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class MenuCreate(BaseModel):
@@ -31,7 +31,7 @@ class Submenu(BaseModel):
     dishes_count: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class SubmenuCreate(BaseModel):
@@ -51,7 +51,7 @@ class Dishes(BaseModel):
     price: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DishesCreate(BaseModel):
@@ -60,7 +60,7 @@ class DishesCreate(BaseModel):
     price: Union[str, float]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DishesUpdate(BaseModel):
@@ -69,4 +69,4 @@ class DishesUpdate(BaseModel):
     price: Union[str, float]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

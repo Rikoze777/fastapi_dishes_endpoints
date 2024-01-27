@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from app.database import menu_crud, schemas
-from app.database.db import get_db
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
+
+from app.crud import menu_crud
+from app.schemas import schemas
+from app.database.db import get_db
 
 
 router = APIRouter(
@@ -69,3 +71,23 @@ def delete_menu(id: UUID4, db: Session = Depends(get_db)):
         status_code=200,
         content={"status": "true", "message": "Menu has been deleted"}
     )
+
+
+@router.get(
+        "/menu_counts",
+        response_model=List[schemas.Menu])
+def get_menu_counts(db: Session = Depends(get_db)):
+    menus = menu_crud.get_complex_query(db)
+
+    menu_counts = []
+    for menu, submenu_count, dishes_count in menus:
+        menu_dict = {
+            "menu_id": str(menu.id),
+            "title": menu.title,
+            "description": menu.description,
+            "submenu_count": submenu_count,
+            "dishes_count": dishes_count,
+        }
+        menu_counts.append(menu_dict)
+
+    return menu_counts

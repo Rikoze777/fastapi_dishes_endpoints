@@ -1,10 +1,11 @@
-from uuid import UUID
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import func
+from sqlalchemy.sql import label
 from sqlalchemy.orm import Session
 from pydantic import UUID4
-from app.database.exceptions import MenuExistsException
+from app.crud.exceptions import MenuExistsException
 from app.database.models import Dishes, Menu, Submenu
-from app.database.schemas import MenuCreate, MenuUpdate
+from app.schemas.schemas import MenuCreate, MenuUpdate
 
 
 def get_menu(db: Session, id: UUID4):
@@ -27,6 +28,21 @@ def get_menu(db: Session, id: UUID4):
     return result
 
 
+def get_complex_query(db: Session):
+    menus = (
+        db.query(
+            Menu,
+            label("submenu_count", func.count(Submenu.id)),
+            label("dishes_count", func.count(Dishes.id))
+        )
+        .outerjoin(Submenu, Menu.id == Submenu.menu_id)
+        .outerjoin(Dishes, Submenu.id == Dishes.submenu_id)
+        .group_by(Menu.id)
+        .all()
+    )
+    return menus
+
+
 def get_menu_list(db: Session):
     all_menu = db.query(Menu).all()
     if not all_menu:
@@ -37,7 +53,7 @@ def get_menu_list(db: Session):
 
 
 def create_menu(db: Session, menu: MenuCreate):
-    new_menu = Menu(**menu.dict())
+    new_menu = Menu(**menu.model_dump())
     db.add(new_menu)
     db.commit()
     db.refresh(new_menu)

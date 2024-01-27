@@ -11,6 +11,8 @@ SQLAlchemy = "^2.0.25"
 psycopg2-binary = "^2.9.9"
 uvicorn = "^0.26.0"
 pydantic-settings = "^2.1.0"
+pytest = "^7.4.4"
+httpx = "^0.26.0"
 
 [tool.poetry.dev-dependencies]
 

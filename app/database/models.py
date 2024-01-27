@@ -33,5 +33,4 @@ class Dishes(Base):
     title = Column(String, unique=True)
     description = Column(String)
     price = Column(DECIMAL(10, 2), nullable=False)
-    # menu_id = Column(String, ForeignKey('menu.id', ondelete='CASCADE'), nullable=False)
     submenu_id = Column(UUID(as_uuid=True), ForeignKey('submenu.id', ondelete='CASCADE'))
