@@ -28,17 +28,18 @@ def get_menu(db: Session, id: UUID4):
     return result
 
 
-def get_complex_query(db: Session):
+def get_complex_query(db: Session, menu_id: UUID4):
     menus = (
         db.query(
             Menu,
             label("submenu_count", func.count(Submenu.id)),
             label("dishes_count", func.count(Dishes.id))
         )
+        .filter(Menu.id == menu_id)
         .outerjoin(Submenu, Menu.id == Submenu.menu_id)
         .outerjoin(Dishes, Submenu.id == Dishes.submenu_id)
         .group_by(Menu.id)
-        .all()
+        .first()
     )
     return menus
 

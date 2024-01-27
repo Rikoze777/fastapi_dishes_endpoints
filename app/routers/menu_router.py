@@ -74,20 +74,17 @@ def delete_menu(id: UUID4, db: Session = Depends(get_db)):
 
 
 @router.get(
-        "/menu_counts",
-        response_model=List[schemas.Menu])
-def get_menu_counts(db: Session = Depends(get_db)):
-    menus = menu_crud.get_complex_query(db)
+        "/menu_counts",)
+def get_menu_counts(menu_id: UUID4, db: Session = Depends(get_db)):
+    menus = menu_crud.get_complex_query(db, menu_id)
 
-    menu_counts = []
-    for menu, submenu_count, dishes_count in menus:
-        menu_dict = {
-            "menu_id": str(menu.id),
-            "title": menu.title,
-            "description": menu.description,
-            "submenu_count": submenu_count,
-            "dishes_count": dishes_count,
-        }
-        menu_counts.append(menu_dict)
+    menu, submenu_count, dishes_count = menus
+    menu_dict = {
+        "menu_id": str(menu.id),
+        "title": menu.title,
+        "description": menu.description,
+        "submenu_count": submenu_count,
+        "dishes_count": dishes_count,
+    }
 
-    return menu_counts
+    return menu_dict
