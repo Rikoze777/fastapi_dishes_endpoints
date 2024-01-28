@@ -43,7 +43,8 @@ def test_get_menu_list(menu_id):
 
 def test_add_submenu(menu_id):
     data = SUBMENU_CREATE_DATA
-    response = client.post(f"/api/v1/menus/{menu_id}/submenus", json=data)
+    response = client.post(f"/api/v1/menus/{menu_id}/submenus",
+                           json=data)
     assert response.status_code == 201
     menu = response.json()
     assert menu["title"] == data["title"]
@@ -74,7 +75,8 @@ def test_get_submenu(menu_id, submenu_id):
 
 def test_update_submenu(menu_id, submenu_id):
     data = SUBMENU_UPDATE_DATA
-    response = client.patch(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/", json=data)
+    response = client.patch(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/",
+                            json=data)
     assert response.status_code == 200
     menu = response.json()
     assert menu["title"] == data["title"]

@@ -1,34 +1,56 @@
 version: "3.10-slim"
 
 services:
-  app:
+  prod:
     build: .
-    command: poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     environment:
       - DATABASE_URL=postgresql://${PROD_DB_USER}:${PROD_DB_PASSWORD}@${PROD_DB_HOST}:${PROD_DB_PORT}/${PROD_DB_NAME}
+    env_file:
+      - .env
+    expose:
+      - 8000
     ports:
       - 8000:8000
     depends_on:
       - prod_db
-    networks:
-      - app_network
 
   prod_db:
     image: postgres:15.1-alpine
-    environment:
-      - POSTGRES_DB=${PROD_DB_NAME}
-      - POSTGRES_USER=${PROD_DB_USER}
-      - POSTGRES_PASSWORD=${PROD_DB_PASSWORD}
+    container_name: prod_db
+    restart: always
+    expose:
+      - 5433
+    env_file:
+      - .env
     volumes:
       - prod_db_data:/var/lib/postgresql/data
     ports:
-      - 5434:5432
-    networks:
-      - app_network
+      - 5433:5433
+
+  test:
+    build: .
+    command: ["poetry", "run", "pytest"]
+    environment:
+      - DATABASE_URL=postgresql://${TEST_DB_USER}:${TEST_DB_PASSWORD}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_NAME}
+    env_file:
+      - .env
+    depends_on:
+      - test_db
+
+  test_db:
+    image: postgres:15.1-alpine
+    container_name: test_db
+    restart: always
+    expose:
+      - 5434
+    env_file:
+      - .env
+    volumes:
+      - test_db_data:/var/lib/postgresql/data
+    ports:
+      - 5434:5434
 
 volumes:
   prod_db_data:
-
-networks:
-  app_network:
-    driver: bridge
+  test_db_data:
