@@ -1,13 +1,5 @@
-# Prod database
-PROD_DB_NAME=menu
-PROD_DB_USER=user
-PROD_DB_PASSWORD=qwerty
-PROD_DB_HOST=localhost
-PROD_DB_PORT=5433
-
-# Test database
-TEST_DB_NAME=test
-TEST_DB_USER=user
-TEST_DB_PASSWORD=qwerty
-TEST_DB_HOST=localhost
-TEST_DB_PORT=5434
+POSTGRES_DB=menu
+POSTGRES_USER=user
+POSTGRES_PASSWORD=qwerty
+POSTGRES_HOST=dishes-app-db
+POSTGRES_PORT=5433

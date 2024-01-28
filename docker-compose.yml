@@ -1,40 +1,26 @@
-version: "3.10-slim"
+version: "3.8"
 
 services:
-  prod:
+  dishes-app:
     build: .
-    command: ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     env_file:
       - .env
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
-      - prod_db
-      - test_db
+      - dishes-app-db
+    environment:
+      - POSTGRES_HOST=dishes-app-db
+      - POSTGRES_PORT=5432
   
-  prod_db:
+  dishes-app-db:
     image: postgres:15.1-alpine
-    container_name: prod_db
-    restart: always
     env_file:
       - .env
     volumes:
-      - prod_db_data:/var/lib/postgresql/data
+      - dishes-app-db-data:/var/lib/postgresql/data
     ports:
-      - 5433:5432
-
-    
-  test_db:
-    image: postgres:15.1-alpine
-    container_name: test_db
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - test_db_data:/var/lib/postgresql/data
-    ports:
-      - 5434:5432
+      - "5433:5432"
 
 volumes:
-  prod_db_data:
-  test_db_data:
+  dishes-app-db-data:
