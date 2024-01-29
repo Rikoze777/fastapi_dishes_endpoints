@@ -56,7 +56,7 @@ def get_menu(id: UUID4, db: Session = Depends(get_db)):
 def update_menu(id: UUID4, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
     menu = menu_crud.get_menu(db, id)
     if not menu:
-        raise HTTPException(status_code=404, detail="Меню не найдено")
+        raise HTTPException(status_code=404, detail="menu not found")
     update_menu = menu_crud.update_menu(db, id, data)
     return menu_crud.get_menu(db, update_menu.id)
 
@@ -74,16 +74,17 @@ def delete_menu(id: UUID4, db: Session = Depends(get_db)):
 
 
 @router.get(
-        "/menu_counts",)
-def get_menu_counts(menu_id: UUID4, db: Session = Depends(get_db)):
-    menus = menu_crud.get_complex_query(db, menu_id)
+        "/menus/{id}/count",
+        name="Посчитать подменю и блюда")
+def get_menu_counts(id: UUID4, db: Session = Depends(get_db)):
+    menus = menu_crud.get_complex_query(db, id)
 
     menu, submenu_count, dishes_count = menus
     menu_dict = {
-        "menu_id": str(menu.id),
+        "id": id,
         "title": menu.title,
         "description": menu.description,
-        "submenu_count": submenu_count,
+        "submenus_count": submenu_count,
         "dishes_count": dishes_count,
     }
 

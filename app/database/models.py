@@ -2,6 +2,7 @@ import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DECIMAL, Column, String, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 
 Base = declarative_base()
@@ -33,4 +34,5 @@ class Dishes(Base):
     title = Column(String, unique=True)
     description = Column(String)
     price = Column(DECIMAL(10, 2), nullable=False)
+
     submenu_id = Column(UUID(as_uuid=True), ForeignKey('submenu.id', ondelete='CASCADE'))

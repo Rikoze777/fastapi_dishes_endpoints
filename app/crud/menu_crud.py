@@ -29,10 +29,11 @@ def get_menu(db: Session, id: UUID4):
 
 
 def get_complex_query(db: Session, menu_id: UUID4):
+
     menus = (
         db.query(
             Menu,
-            label("submenu_count", func.count(Submenu.id)),
+            label("submenu_count", func.count(Submenu.id.distinct())),
             label("dishes_count", func.count(Dishes.id))
         )
         .filter(Menu.id == menu_id)

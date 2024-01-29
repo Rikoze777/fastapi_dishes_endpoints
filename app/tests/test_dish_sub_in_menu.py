@@ -58,6 +58,18 @@ def test_add_dish_second(test_client, menu_id, submenu_id):
     assert dish['price'] == str(round(float(data['price']), 2))
 
 
+def test_menu_complex_data(test_client, menu_id):
+    menu = MENU_CREATE_DATA
+    response = test_client.get(f"/api/v1/menus/{menu_id}/count")
+    assert response.status_code == 200
+    result = response.json()
+    assert "id" in result
+    assert result["title"] == menu["title"]
+    assert result["description"] == menu["description"]
+    assert "submenus_count" in result
+    assert "dishes_count" in result
+
+
 def test_delete_submenu(test_client, menu_id, submenu_id):
     response = test_client.delete(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}")
     assert response.status_code == 200
