@@ -1,10 +1,8 @@
-from uuid import UUID
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from pydantic import UUID4
-from app.database.exceptions import DishExistsException
+from app.crud.exceptions import DishExistsException
 from app.database.models import Dishes
-from app.database.schemas import DishesUpdate, DishesCreate
+from app.schemas.schemas import DishesUpdate, DishesCreate
 
 
 def get_dish(db: Session, submenu_id: UUID4, id: UUID4):
@@ -15,10 +13,9 @@ def get_dish(db: Session, submenu_id: UUID4, id: UUID4):
 
 
 def create_dish(db: Session, submenu_id: UUID4, dish: DishesCreate):
-    new_dish = Dishes(**dish.dict())
+    new_dish = Dishes(**dish.model_dump())
     new_dish.submenu_id = submenu_id
     new_dish.price = new_dish.price
-    # "{:.2f}".format(float(new_dish.price))
     db.add(new_dish)
     db.commit()
     return new_dish

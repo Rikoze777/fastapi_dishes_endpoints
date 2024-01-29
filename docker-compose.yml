@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  dishes-app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - dishes-app-db
+    environment:
+      - POSTGRES_HOST=dishes-app-db
+      - POSTGRES_PORT=5432
+  
+  dishes-app-db:
+    image: postgres:15.1-alpine
+    env_file:
+      - .env
+    volumes:
+      - dishes-app-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  dishes-app-db-data:

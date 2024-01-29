@@ -1,1 +1,4 @@
-DATABASE_URL="postgresql://username:password@localhost:5432/db_name"
+POSTGRES_DB=menu
+POSTGRES_USER=user
+POSTGRES_PASSWORD=qwerty
+

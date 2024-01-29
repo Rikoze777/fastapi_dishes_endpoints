@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from app.database import submenu_crud, schemas
+from app.schemas import schemas
 from app.database.db import get_db
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
+from app.crud import submenu_crud
 
 
 router = APIRouter(

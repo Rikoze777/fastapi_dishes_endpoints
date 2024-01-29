@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
-from app.database import menu_crud, schemas
-from app.database.db import get_db
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
+
+from app.crud import menu_crud
+from app.schemas import schemas
+from app.database.db import get_db
 
 
 router = APIRouter(
@@ -54,7 +56,7 @@ def get_menu(id: UUID4, db: Session = Depends(get_db)):
 def update_menu(id: UUID4, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
     menu = menu_crud.get_menu(db, id)
     if not menu:
-        raise HTTPException(status_code=404, detail="Меню не найдено")
+        raise HTTPException(status_code=404, detail="menu not found")
     update_menu = menu_crud.update_menu(db, id, data)
     return menu_crud.get_menu(db, update_menu.id)
 
@@ -69,3 +71,21 @@ def delete_menu(id: UUID4, db: Session = Depends(get_db)):
         status_code=200,
         content={"status": "true", "message": "Menu has been deleted"}
     )
+
+
+@router.get(
+        "/menus/{id}/count",
+        name="Посчитать подменю и блюда")
+def get_menu_counts(id: UUID4, db: Session = Depends(get_db)):
+    menus = menu_crud.get_complex_query(db, id)
+
+    menu, submenu_count, dishes_count = menus
+    menu_dict = {
+        "id": id,
+        "title": menu.title,
+        "description": menu.description,
+        "submenus_count": submenu_count,
+        "dishes_count": dishes_count,
+    }
+
+    return menu_dict
