@@ -33,6 +33,11 @@ poetry install
 
 ## Установка с make:
 
+- Если не установлен `poetry` - установите командой:
+```bash
+pip install poetry
+```
+
 - Если отсутствует make, установите командой:
 ```bash
 sudo apt-get -y install make
@@ -62,12 +67,12 @@ make run
 
 - Для запуска приложения выполните команду:
 ```bash
-docker-compose up -d --build dishes-app
+docker-compose up --build dishes-app
 ```
 
 - Для запуска тестов в выполните команду:
 ```bash
-docker-compose up -d --build dishes-app-test
+docker-compose up --build dishes-app-test
 ```
 
 
