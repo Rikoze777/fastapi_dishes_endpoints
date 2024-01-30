@@ -62,17 +62,13 @@ make run
 
 - Для запуска приложения выполните команду:
 ```bash
-docker-compose up -d 
+docker-compose up -d --build dishes-app
 ```
-- При запуске тестов создается тестовая база и новый контейнер
 
 - Для запуска тестов в выполните команду:
 ```bash
-docker-compose run dishes-app pytest
+docker-compose up -d --build dishes-app-test
 ```
-
-- Пример после запуска нескольких тестов
-
 
 
 ### Зависимости задания:

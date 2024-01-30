@@ -8,19 +8,33 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - dishes-app-db
-    environment:
-      - POSTGRES_HOST=dishes-app-db
-      - POSTGRES_PORT=5432
-  
-  dishes-app-db:
-    image: postgres:15.1-alpine
+      dishes-app-db:
+        condition: service_healthy
+
+  dishes-app-test:
+    build: .
+    command: ["pytest"]
     env_file:
       - .env
+    depends_on:
+      dishes-app-db:
+        condition: service_healthy
+    
+  dishes-app-db:
+    image: postgres:15.1-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - dishes-app-db-data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 3s
+      timeout: 30s
+      retries: 3
 
 volumes:
   dishes-app-db-data:

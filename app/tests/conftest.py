@@ -9,17 +9,14 @@ from app.config import Config
 
 
 config = Config()
-target_db = f"{config.POSTGRES_DB}_test"
+target_db = config.POSTGRES_DB_TEST
+testbase_url = config.TESTBASE_URL
+postgres_connection_url = config.POSTGRES_URL
 
 
 @pytest.fixture(scope="session", autouse=True)
 def test_database():
-    postgres_connection_url = f"postgresql+psycopg2://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/postgres"
-
     engine = create_engine(postgres_connection_url, isolation_level="AUTOCOMMIT")
-
-    if not target_db.endswith("_test"):
-        raise ValueError('test database name must end with "_test"')
 
     with engine.connect() as conn:
         conn.execute(text(f'DROP DATABASE IF EXISTS "{target_db}" WITH (FORCE)'))
@@ -29,8 +26,7 @@ def test_database():
 
 @pytest.fixture
 def db_engine():
-    TESTBASE = f"postgresql+psycopg2://{config.POSTGRES_USER}:{config.POSTGRES_PASSWORD}@{config.POSTGRES_HOST}:{config.POSTGRES_PORT}/{target_db}"
-    engine = create_engine(TESTBASE)
+    engine = create_engine(testbase_url)
     Base.metadata.create_all(bind=engine)
     return engine
 
