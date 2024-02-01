@@ -1,11 +1,7 @@
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DECIMAL, Column, String, ForeignKey, Integer
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-
-Base = declarative_base()
+from app.database.db import Base
 
 
 class Menu(Base):

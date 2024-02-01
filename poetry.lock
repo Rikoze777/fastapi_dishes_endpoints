@@ -1,4 +1,19 @@
 [[package]]
+name = "aioredis"
+version = "2.0.1"
+description = "asyncio (PEP 3156) Redis support"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+async-timeout = "*"
+typing-extensions = "*"
+
+[package.extras]
+hiredis = ["hiredis (>=1.0)"]
+
+[[package]]
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -353,9 +368,10 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "34cb67489644d0b65c25cb6d7c00d250833bf70f1bd29e3bb5652f89b8aa97b7"
+content-hash = "fd1ab7757975f997d2eeb67be76ad6b7e018d1f88a5188b6562063ab502db258"
 
 [metadata.files]
+aioredis = []
 annotated-types = []
 anyio = []
 async-timeout = []
