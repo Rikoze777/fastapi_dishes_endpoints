@@ -1,17 +1,21 @@
+from typing import Annotated
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func, label
 from pydantic import UUID4
 from app.crud.exceptions import MenuExistsException
+from app.database.db import get_async_session
 from app.database.models import Dishes, Menu, Submenu
 from app.schemas.schemas import MenuCreate, MenuUpdate
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session
 
 
 class MenuRepository:
 
-    def __init__(self, db: AsyncSession):
-        self.db = db
+    def __init__(self, session: AsyncSession = Depends(get_async_session)):
+        self.db: Session = session
 
     async def get_menu(self,
                        id: UUID4) -> Menu:
@@ -19,7 +23,8 @@ class MenuRepository:
         if not menu:
             raise MenuExistsException()
         result = jsonable_encoder(menu)
-        submenus = await self.db.execute(select(Submenu).filter(Submenu.menu_id == id))
+        submenus = await self.db.execute(select(Submenu).
+                                         filter(Submenu.menu_id == id))
         submenus = submenus.scalars().all()
         if not submenus:
             result['submenus_count'] = 0
@@ -27,7 +32,8 @@ class MenuRepository:
         else:
             result['submenus_count'] = len(submenus)
             for submenu in submenus:
-                dishes = await self.db.execute(select(Dishes).filter(Dishes.submenu_id == submenu.id))
+                dishes = await self.db.execute(select(Dishes).
+                                               filter(Dishes.submenu_id == submenu.id))
                 dishes = dishes.scalars().all()
                 if not dishes:
                     result['dishes_count'] = 0
@@ -36,7 +42,7 @@ class MenuRepository:
         return result
 
     async def get_complex_query(self,
-                                menu_id: UUID4) -> Menu:
+                                menu_id: UUID4):
         statement = (
             select(
                 Menu,
@@ -49,7 +55,7 @@ class MenuRepository:
             .group_by(Menu.id)
         )
         result = await self.db.execute(statement)
-        return result.scalars().first()
+        return result.first()
 
     async def get_menu_list(self) -> list[Menu]:
         menus = await self.db.execute(select(Menu))
@@ -79,8 +85,8 @@ class MenuRepository:
         await self.db.refresh(db_menu)
         return db_menu
 
-    async def delete_menu(self,
-                          id: UUID4) -> None:
+    async def delete(self,
+                     id: UUID4) -> None:
         db_menu = await self.db.get(Menu, id)
         await self.db.delete(db_menu)
         await self.db.commit()
