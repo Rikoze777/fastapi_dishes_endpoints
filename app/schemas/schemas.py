@@ -70,3 +70,7 @@ class DishesUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class Cache(BaseModel):
+    key: str

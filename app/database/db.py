@@ -7,12 +7,14 @@ import redis
 config = Config()
 database_url = config.POSTGRES_URL
 engine = create_engine(database_url)
+redis_host = config.REDIS_HOST
+redis_port = config.REDIS_PORT
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def get_redis():
-    cache = redis.Redis(host='redis', port=6379)
+    cache = redis.Redis(host=redis_host, port=redis_port, db=0)
     return cache
 
 

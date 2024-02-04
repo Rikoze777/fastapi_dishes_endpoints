@@ -3,10 +3,11 @@ from typing import List
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
-
-from app.crud import menu_crud
+from app.crud.exceptions import MenuExistsException
+import uuid
 from app.schemas import schemas
 from app.database.db import get_db
+from app.services.menu import MenuService
 
 
 router = APIRouter(
@@ -20,8 +21,8 @@ router = APIRouter(
     response_model=List[schemas.Menu],
     name="Список меню",
 )
-def get_menu_list(db: Session = Depends(get_db)):
-    return menu_crud.get_menu_list(db)
+def get_menu_list(menu: MenuService = Depends()):
+    return menu.get_menu_list()
 
 
 @router.post(
@@ -30,9 +31,9 @@ def get_menu_list(db: Session = Depends(get_db)):
     name='Создать меню',
     status_code=201,
 )
-def add_menu(data: schemas.MenuCreate, db: Session = Depends(get_db)):
-    menu = menu_crud.create_menu(db, data)
-    return menu_crud.get_menu(db, menu.id)
+def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
+    result = menu.create_menu(data)
+    return menu.get_menu(result.id)
 
 
 @router.get(
@@ -40,10 +41,10 @@ def add_menu(data: schemas.MenuCreate, db: Session = Depends(get_db)):
     response_model=schemas.Menu,
     name="Меню по id",
 )
-def get_menu(id: UUID4, db: Session = Depends(get_db)):
+def get_menu(id: UUID4, menu: MenuService = Depends()):
     try:
-        menu = menu_crud.get_menu(db, id)
-    except:
+        menu = menu.get_menu(id)
+    except MenuExistsException:
         raise HTTPException(status_code=404, detail="menu not found")
     return menu
 
@@ -53,20 +54,21 @@ def get_menu(id: UUID4, db: Session = Depends(get_db)):
     response_model=schemas.Menu,
     name="Обновить меню",
 )
-def update_menu(id: UUID4, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
-    menu = menu_crud.get_menu(db, id)
+def update_menu(id: UUID4,
+                data: schemas.MenuUpdate,
+                menu: MenuService = Depends()):
+    menu.get_menu(id)
     if not menu:
         raise HTTPException(status_code=404, detail="menu not found")
-    update_menu = menu_crud.update_menu(db, id, data)
-    return menu_crud.get_menu(db, update_menu.id)
+    return menu.update_menu(id, data)
 
 
 @router.delete(
     "/menus/{id}/",
     name="Удалить меню",
 )
-def delete_menu(id: UUID4, db: Session = Depends(get_db)):
-    menu_crud.delete_menu(db, id)
+def delete_menu(id: UUID4, menu: MenuService = Depends()):
+    menu.delete_menu(id)
     return JSONResponse(
         status_code=200,
         content={"status": "true", "message": "Menu has been deleted"}
@@ -76,8 +78,8 @@ def delete_menu(id: UUID4, db: Session = Depends(get_db)):
 @router.get(
         "/menus/{id}/count",
         name="Посчитать подменю и блюда")
-def get_menu_counts(id: UUID4, db: Session = Depends(get_db)):
-    menus = menu_crud.get_complex_query(db, id)
+def get_menu_counts(id: UUID4, menu: MenuService = Depends()):
+    menus = menu.get_complex_query(id)
 
     menu, submenu_count, dishes_count = menus
     menu_dict = {
