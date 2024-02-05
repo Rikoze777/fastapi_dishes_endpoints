@@ -18,8 +18,18 @@ router = APIRouter(
     name='Просмотр списка подменю',
 )
 def get_submenu_list(menu_id: UUID4,
-                     submenu: SubmenuService = Depends())\
-        -> list[schemas.Submenu]:
+                     submenu: SubmenuService = Depends()) -> list[schemas.Submenu]:
+    """
+    Retrieve a list of submenus for a specific menu ID.
+
+    Args:
+        menu_id (UUID4): The unique identifier for the menu.
+        submenu (SubmenuService, optional): An instance of the SubmenuService class. Defaults to None.
+
+    Returns:
+        list[schemas.Submenu]: A list of submenus associated with the specified menu ID.
+    """
+
     return submenu.get_submenu_list(menu_id)
 
 
@@ -32,6 +42,9 @@ def get_submenu_list(menu_id: UUID4,
 def add_submenu(menu_id: UUID4,
                 data: schemas.SubmenuCreate,
                 submenu: SubmenuService = Depends()) -> schemas.Submenu:
+    """
+    A function to add a submenu to a menu, taking the menu ID, submenu data, and submenu service as parameters, and returning the created submenu.
+    """
     result = submenu.create_submenu(menu_id, data)
     return result
 
@@ -44,6 +57,20 @@ def add_submenu(menu_id: UUID4,
 def get_submenu(menu_id: UUID4,
                 submenu_id: UUID4,
                 submenu: SubmenuService = Depends()) -> schemas.Submenu:
+    """
+    A function to get a submenu by menu_id and submenu_id, using SubmenuService dependency.
+
+    Args:
+        menu_id (UUID4): The UUID of the menu.
+        submenu_id (UUID4): The UUID of the submenu.
+        submenu (SubmenuService, optional): The SubmenuService dependency. Defaults to Depends().
+
+    Returns:
+        schemas.Submenu: The retrieved submenu.
+
+    Raises:
+        HTTPException: If the submenu is not found, it raises an HTTPException with status code 404.
+    """
     try:
         result = submenu.get_submenu(menu_id, submenu_id)
     except SubmenuExistsException:
@@ -60,6 +87,9 @@ def update_submenu(menu_id: UUID4,
                    submenu_id: UUID4,
                    data: schemas.SubmenuUpdate,
                    submenu: SubmenuService = Depends()) -> schemas.Submenu:
+    """
+    A function to update a submenu, taking in menu_id, submenu_id, data, and submenu service, and returning the updated submenu.
+    """
     try:
         submenu.get_submenu(menu_id, submenu_id)
     except SubmenuExistsException:
@@ -75,6 +105,17 @@ def update_submenu(menu_id: UUID4,
 def delete_submenu(menu_id: UUID4,
                    submenu_id: UUID4,
                    submenu: SubmenuService = Depends()):
+    """
+    A view function to delete a submenu.
+
+    Args:
+        menu_id (UUID4): The ID of the menu.
+        submenu_id (UUID4): The ID of the submenu to be deleted.
+        submenu (SubmenuService, optional): An instance of SubmenuService. Defaults to Depends().
+
+    Returns:
+        JSONResponse: A JSON response indicating the status of the deletion operation.
+    """
     submenu.delete_submenu(menu_id, submenu_id)
     return JSONResponse(
         status_code=200,
