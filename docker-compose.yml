@@ -21,7 +21,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    
+
   dishes-app-db:
     image: postgres:15.1-alpine
     environment:

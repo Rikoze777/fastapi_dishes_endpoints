@@ -1,6 +1,4 @@
-from typing import Union
-from pydantic import BaseModel
-from pydantic import UUID4
+from pydantic import UUID4, BaseModel
 
 
 class Menu(BaseModel):
@@ -57,7 +55,7 @@ class Dishes(BaseModel):
 class DishesCreate(BaseModel):
     title: str
     description: str
-    price: Union[str, float]
+    price: str | float
 
     class Config:
         from_attributes = True
@@ -66,7 +64,7 @@ class DishesCreate(BaseModel):
 class DishesUpdate(BaseModel):
     title: str
     description: str
-    price: Union[str, float]
+    price: str | float
 
     class Config:
         from_attributes = True

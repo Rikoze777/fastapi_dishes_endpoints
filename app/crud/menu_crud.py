@@ -1,9 +1,10 @@
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import func
-from sqlalchemy.sql import label
-from sqlalchemy.orm import Session
 from pydantic import UUID4
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import label
+
 from app.crud.exceptions import MenuExistsException
 from app.database.db import get_db
 from app.database.models import Dishes, Menu, Submenu
@@ -42,8 +43,8 @@ class MenuRepositary:
         menus = (
             self.session.query(
                 Menu,
-                label("submenu_count", func.count(Submenu.id.distinct())),
-                label("dishes_count", func.count(Dishes.id))
+                label('submenu_count', func.count(Submenu.id.distinct())),
+                label('dishes_count', func.count(Dishes.id))
             )
             .filter(Menu.id == menu_id)
             .outerjoin(Submenu, Menu.id == Submenu.menu_id)

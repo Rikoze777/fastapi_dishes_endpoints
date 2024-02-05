@@ -1,7 +1,8 @@
 import json
-from typing import List
+
 from fastapi import Depends
 from pydantic import UUID4
+
 from app.crud.menu_crud import MenuRepositary
 from app.database.db import get_redis
 from app.schemas import schemas
@@ -22,7 +23,7 @@ class MenuService:
         else:
             return json.loads(self.cache.get(menu_id))
 
-    def get_menu_list(self) -> List[schemas.Menu]:
+    def get_menu_list(self) -> list:
         if not self.cache.get('menu'):
             list_menu = self.repository.get_menu_list()
             self.cache.set('menu', json.dumps(list_menu))
@@ -49,7 +50,16 @@ class MenuService:
         menu_id = str(id)
         self.repository.delete_menu(id)
         self.cache.delete(menu_id)
-        self.cache.delete('menu')
+        self.cache.delete('menu', 'submenu', 'dishes')
 
-    def get_complex_query(self, menu_id: UUID4) -> schemas.Menu:
-        return self.repository.get_complex_query(menu_id)
+    def get_complex_query(self, menu_id: UUID4) -> dict:
+        query = self.repository.get_complex_query(menu_id)
+        menu, submenu_count, dishes_count = query
+        menu_dict = {
+            'id': id,
+            'title': menu.title,
+            'description': menu.description,
+            'submenus_count': submenu_count,
+            'dishes_count': dishes_count,
+        }
+        return menu_dict
