@@ -1,91 +1,138 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
-from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
-from app.crud import menu_crud
+from app.repository.exceptions import MenuExistsException
 from app.schemas import schemas
-from app.database.db import get_db
-
+from app.services.menu import MenuService
 
 router = APIRouter(
-    tags=["menu"],
-    prefix="/api/v1",
+    tags=['menu'],
+    prefix='/api/v1/menus',
 )
 
 
 @router.get(
-    "/menus",
-    response_model=List[schemas.Menu],
-    name="Список меню",
+    '/',
+    response_model=list[schemas.Menu],
+    name='Список меню',
 )
-def get_menu_list(db: Session = Depends(get_db)):
-    return menu_crud.get_menu_list(db)
+def get_menu_list(menu: MenuService = Depends()):
+    """
+    A function to retrieve a list of menus using the MenuService dependency.
+    """
+    return menu.get_menu_list()
 
 
 @router.post(
-    "/menus",
+    '/',
     response_model=schemas.Menu,
     name='Создать меню',
     status_code=201,
 )
-def add_menu(data: schemas.MenuCreate, db: Session = Depends(get_db)):
-    menu = menu_crud.create_menu(db, data)
-    return menu_crud.get_menu(db, menu.id)
+def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
+    """
+    A function to add a menu using the provided data and MenuService instance.
+
+    Args:
+        data (schemas.MenuCreate): The data for creating the menu.
+        menu (MenuService, optional): An instance of MenuService. Defaults to Depends().
+
+    Returns:
+        The created menu.
+    """
+    return menu.create_menu(data)
 
 
 @router.get(
-    "/menus/{id}/",
+    '/{id}/',
     response_model=schemas.Menu,
-    name="Меню по id",
+    name='Меню по id',
 )
-def get_menu(id: UUID4, db: Session = Depends(get_db)):
+def get_menu(id: UUID4, menu: MenuService = Depends()):
+    """
+    A function to get the menu by its ID using MenuService dependency.
+
+    Args:
+        id (UUID4): The ID of the menu.
+        menu (MenuService, optional): The MenuService dependency. Defaults to Depends().
+
+    Returns:
+        schemas.Menu: The menu object.
+
+    Raises:
+        HTTPException: If the menu is not found.
+    """
     try:
-        menu = menu_crud.get_menu(db, id)
-    except:
-        raise HTTPException(status_code=404, detail="menu not found")
+        menu = menu.get_menu(id)
+    except MenuExistsException:
+        raise HTTPException(status_code=404, detail='menu not found')
     return menu
 
 
 @router.patch(
-    "/menus/{id}/",
+    '/{id}/',
     response_model=schemas.Menu,
-    name="Обновить меню",
+    name='Обновить меню',
 )
-def update_menu(id: UUID4, data: schemas.MenuUpdate, db: Session = Depends(get_db)):
-    menu = menu_crud.get_menu(db, id)
-    if not menu:
-        raise HTTPException(status_code=404, detail="menu not found")
-    update_menu = menu_crud.update_menu(db, id, data)
-    return menu_crud.get_menu(db, update_menu.id)
+def update_menu(id: UUID4,
+                data: schemas.MenuUpdate,
+                menu: MenuService = Depends()):
+    """
+    Update a menu with the given ID using the provided data.
+
+    Parameters:
+        id (UUID4): The ID of the menu to be updated.
+        data (schemas.MenuUpdate): The updated menu data.
+        menu (MenuService, optional): An instance of the MenuService class. Defaults to None.
+
+    Returns:
+        schemas.Menu: The updated menu.
+
+    Raises:
+        HTTPException: If the menu with the given ID is not found.
+    """
+    try:
+        up_menu = menu.update_menu(id, data)
+    except MenuExistsException:
+        raise HTTPException(status_code=404, detail='menu not found')
+    return up_menu
 
 
 @router.delete(
-    "/menus/{id}/",
-    name="Удалить меню",
+    '/{id}/',
+    name='Удалить меню',
 )
-def delete_menu(id: UUID4, db: Session = Depends(get_db)):
-    menu_crud.delete_menu(db, id)
+def delete_menu(id: UUID4, menu: MenuService = Depends()):
+    """
+    Delete a menu by its ID.
+
+    Args:
+        id (UUID4): The ID of the menu to be deleted.
+        menu (MenuService, optional): An instance of the MenuService. Defaults to Depends().
+
+    Returns:
+        JSONResponse: The JSON response indicating the status of the deletion.
+    """
+    menu.delete_menu(id)
     return JSONResponse(
         status_code=200,
-        content={"status": "true", "message": "Menu has been deleted"}
+        content={'status': 'true', 'message': 'Menu has been deleted'}
     )
 
 
 @router.get(
-        "/menus/{id}/count",
-        name="Посчитать подменю и блюда")
-def get_menu_counts(id: UUID4, db: Session = Depends(get_db)):
-    menus = menu_crud.get_complex_query(db, id)
+    '/{id}/count',
+    name='Посчитать подменю и блюда')
+def get_menu_counts(id: UUID4, menu: MenuService = Depends()) -> dict:
+    """
+    A function to retrieve menu counts based on the provided ID and menu service.
 
-    menu, submenu_count, dishes_count = menus
-    menu_dict = {
-        "id": id,
-        "title": menu.title,
-        "description": menu.description,
-        "submenus_count": submenu_count,
-        "dishes_count": dishes_count,
-    }
+    Parameters:
+        id: UUID4 - The ID used to retrieve the menu counts.
+        menu: MenuService - An instance of the MenuService class used to retrieve menu counts.
 
-    return menu_dict
+    Returns:
+        dict - A dictionary containing the menu counts based on the provided ID.
+    """
+    return menu.get_complex_query(id)

@@ -19,7 +19,9 @@ services:
     depends_on:
       dishes-app-db:
         condition: service_healthy
-    
+      redis:
+        condition: service_healthy
+
   dishes-app-db:
     image: postgres:15.1-alpine
     environment:
@@ -35,6 +37,22 @@ services:
       interval: 3s
       timeout: 30s
       retries: 3
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf://usr/local/etc/redis/redis.conf
+    expose:
+      - 6379
+    ports:
+      - "8100:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 20s
+      retries: 100
 
 volumes:
   dishes-app-db-data:
