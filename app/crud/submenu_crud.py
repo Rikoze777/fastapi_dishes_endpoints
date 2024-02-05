@@ -31,12 +31,14 @@ class SubmenuRepositary:
         return result
 
     def get_submenu_list(self, id: UUID4):
-        try:
-            all_submenu = self.session.query(Submenu)\
-                                      .filter(Submenu.menu_id == id).all()
-        except SubmenuExistsException:
-            all_submenu = []
-        return all_submenu
+        all_submenu = self.session.query(Submenu)\
+            .filter(Submenu.menu_id == id).all()
+        if not all_submenu:
+            return []
+        else:
+            list_submenu = [self.get_submenu(submenu.menu_id, submenu.id)
+                            for submenu in all_submenu]
+            return list_submenu
 
     def create_submenu(self,
                        menu_id: UUID4,

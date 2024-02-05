@@ -8,7 +8,7 @@ from app.services.menu import MenuService
 
 router = APIRouter(
     tags=['menu'],
-    prefix='/api/v1//menus',
+    prefix='/api/v1/menus',
 )
 
 
@@ -28,8 +28,7 @@ def get_menu_list(menu: MenuService = Depends()):
     status_code=201,
 )
 def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
-    result = menu.create_menu(data)
-    return menu.get_menu(result.id)
+    return menu.create_menu(data)
 
 
 @router.get(
@@ -53,10 +52,11 @@ def get_menu(id: UUID4, menu: MenuService = Depends()):
 def update_menu(id: UUID4,
                 data: schemas.MenuUpdate,
                 menu: MenuService = Depends()):
-    menu.get_menu(id)
-    if not menu:
+    try:
+        up_menu = menu.update_menu(id, data)
+    except MenuExistsException:
         raise HTTPException(status_code=404, detail='menu not found')
-    return menu.update_menu(id, data)
+    return up_menu
 
 
 @router.delete(

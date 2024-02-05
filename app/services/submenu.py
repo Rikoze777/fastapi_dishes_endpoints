@@ -19,40 +19,35 @@ class SubmenuService:
                     submenu_id: UUID4) -> schemas.Submenu:
         submenu = self.repository.get_submenu(menu_id, submenu_id)
         if not self.cache.get(str(submenu_id)):
-            submenu = self.repository.get_submenu(menu_id, submenu_id)
             self.cache.set(str(submenu_id), json.dumps(submenu))
             self.cache.expire(str(submenu_id), 300)
-            return submenu
-        else:
-            return json.loads(self.cache.get(submenu_id))
+        return submenu
 
     def get_submenu_list(self,
                          menu_id: UUID4) -> list:
+        list_submenu = self.repository.get_submenu_list(menu_id)
         if not self.cache.get('submenu'):
-            list_submenu = self.repository.get_submenu_list(menu_id)
             self.cache.set('submenu', json.dumps(list_submenu))
             self.cache.expire('submenu', 300)
-            return list_submenu
-        else:
-            return json.loads(self.cache.get('submenu'))
+        return list_submenu
 
     def create_submenu(self,
                        menu_id: UUID4,
                        submenu: schemas.SubmenuCreate) -> schemas.Submenu:
         sub = self.repository.create_submenu(menu_id, submenu)
         self.cache.delete('menu', 'submenu')
-        return sub
+        return self.repository.get_submenu(menu_id, sub.id)
 
     def update_submenu(self,
                        menu_id: UUID4,
                        submenu_id: UUID4,
                        submenu: schemas.SubmenuUpdate) -> schemas.Submenu:
-        update_submenu = self.repository.update_submenu(menu_id,
-                                                        submenu_id,
-                                                        submenu)
+        self.repository.update_submenu(menu_id,
+                                       submenu_id,
+                                       submenu)
         self.cache.delete(str(submenu_id))
         self.cache.delete('submenu')
-        return update_submenu
+        return self.repository.get_submenu(menu_id, submenu_id)
 
     def delete_submenu(self,
                        menu_id: UUID4,

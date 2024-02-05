@@ -15,27 +15,24 @@ class MenuService:
 
     def get_menu(self, id: UUID4) -> schemas.Menu:
         menu_id = str(id)
+        menu = self.repository.get_menu(id)
         if not self.cache.get(menu_id):
             menu = self.repository.get_menu(id)
             self.cache.set(menu_id, json.dumps(menu))
             self.cache.expire(menu_id, 300)
-            return menu
-        else:
-            return json.loads(self.cache.get(menu_id))
+        return menu
 
     def get_menu_list(self) -> list:
+        list_menu = self.repository.get_menu_list()
         if not self.cache.get('menu'):
-            list_menu = self.repository.get_menu_list()
             self.cache.set('menu', json.dumps(list_menu))
             self.cache.expire('menu', 300)
-            return list_menu
-        else:
-            return json.loads(self.cache.get('menu'))
+        return list_menu
 
     def create_menu(self, menu: schemas.MenuCreate) -> schemas.MenuCreate:
         result = self.repository.create_menu(menu)
         self.cache.delete('menu')
-        return result
+        return self.repository.get_menu(result.id)
 
     def update_menu(self,
                     id: UUID4,
@@ -44,7 +41,7 @@ class MenuService:
         self.repository.update_menu(id, menu)
         self.cache.delete(menu_id)
         self.cache.delete('menu')
-        return self.repository.get_menu(menu_id)
+        return self.repository.get_menu(id)
 
     def delete_menu(self, id: UUID4):
         menu_id = str(id)

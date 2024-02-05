@@ -59,7 +59,6 @@ def update_dish(submenu_id: UUID4,
                 data: schemas.DishesUpdate,
                 dishes: DishesService = Depends()) -> schemas.Dishes:
     try:
-        dishes.get_dish(submenu_id, dish_id)
         updated_dish = dishes.update_dish(submenu_id, dish_id, data)
     except DishExistsException:
         raise HTTPException(status_code=404, detail='dish not found')
