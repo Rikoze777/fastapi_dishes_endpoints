@@ -36,9 +36,11 @@ class MenuService:
         self.cache.delete('menu')
         return result
 
-    def update_menu(self, id: UUID4, menu: schemas.MenuUpdate) -> schemas.MenuUpdate:
+    def update_menu(self,
+                    id: UUID4,
+                    menu: schemas.MenuUpdate) -> schemas.MenuUpdate:
         menu_id = str(id)
-        update_menu = self.repository.update_menu(id, menu)
+        self.repository.update_menu(id, menu)
         self.cache.delete(menu_id)
         self.cache.delete('menu')
         return self.repository.get_menu(menu_id)

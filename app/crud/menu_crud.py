@@ -19,14 +19,18 @@ class MenuRepositary:
         if not menu:
             raise MenuExistsException()
         result = jsonable_encoder(menu)
-        submenus = self.session.query(Submenu).filter(Submenu.menu_id == id).all()
+        submenus = self.session.query(Submenu)\
+                               .filter(Submenu.menu_id == id)\
+                               .all()
         if not submenus:
             result['submenus_count'] = 0
             result['dishes_count'] = 0
         else:
             result['submenus_count'] = len(submenus)
             for submenu in submenus:
-                dishes = self.session.query(Dishes).filter(Dishes.submenu_id == submenu.id).all()
+                dishes = self.session.query(Dishes)\
+                                     .filter(Dishes.submenu_id == submenu.id)\
+                                     .all()
                 if not dishes:
                     result['dishes_count'] = 0
                 else:

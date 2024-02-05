@@ -1,23 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 from app.crud.exceptions import MenuExistsException
-import uuid
 from app.schemas import schemas
-from app.database.db import get_db
 from app.services.menu import MenuService
 
 
 router = APIRouter(
     tags=["menu"],
-    prefix="/api/v1",
+    prefix="/api/v1//menus",
 )
 
 
 @router.get(
-    "/menus",
+    "/",
     response_model=List[schemas.Menu],
     name="Список меню",
 )
@@ -26,7 +23,7 @@ def get_menu_list(menu: MenuService = Depends()):
 
 
 @router.post(
-    "/menus",
+    "/",
     response_model=schemas.Menu,
     name='Создать меню',
     status_code=201,
@@ -37,7 +34,7 @@ def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
 
 
 @router.get(
-    "/menus/{id}/",
+    "/{id}/",
     response_model=schemas.Menu,
     name="Меню по id",
 )
@@ -50,7 +47,7 @@ def get_menu(id: UUID4, menu: MenuService = Depends()):
 
 
 @router.patch(
-    "/menus/{id}/",
+    "/{id}/",
     response_model=schemas.Menu,
     name="Обновить меню",
 )
@@ -64,7 +61,7 @@ def update_menu(id: UUID4,
 
 
 @router.delete(
-    "/menus/{id}/",
+    "/{id}/",
     name="Удалить меню",
 )
 def delete_menu(id: UUID4, menu: MenuService = Depends()):
@@ -76,7 +73,7 @@ def delete_menu(id: UUID4, menu: MenuService = Depends()):
 
 
 @router.get(
-        "/menus/{id}/count",
+        "/{id}/count",
         name="Посчитать подменю и блюда")
 def get_menu_counts(id: UUID4, menu: MenuService = Depends()):
     menus = menu.get_complex_query(id)
