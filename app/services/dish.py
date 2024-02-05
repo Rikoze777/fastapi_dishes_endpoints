@@ -18,12 +18,12 @@ class DishesService:
     def get_dish(self,
                  submenu_id: UUID4,
                  dish_id: UUID4) -> schemas.Dishes:
-        if not self.cache.get(str(dish_id)):
+        if not self.cache.get(dish_id):
             dish = self.repository.get_dish(submenu_id, dish_id)
             dish.price = f'{float(dish.price):.2f}'
             dish = jsonable_encoder(dish)
-            self.cache.set(str(dish_id), json.dumps(dish))
-            self.cache.expire(str(dish_id), 300)
+            self.cache.set(dish_id, dish)
+            self.cache.expire(dish_id, 300)
             return dish
         else:
             return json.loads(self.cache.get(dish_id))
