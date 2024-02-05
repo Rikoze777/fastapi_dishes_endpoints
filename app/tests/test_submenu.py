@@ -10,7 +10,8 @@ SUBMENU_UPDATE_DATA = {'title': 'Test update submenu',
 
 
 def test_get_empty_submenu(test_client, delete_menus):
-    response = test_client.get(reverse(submenu_router.get_submenu_list))
+    response = test_client.get(reverse(submenu_router.get_submenu_list,
+                                       menu_id=TEST_MENU_ID))
     assert response.status_code == 200
     assert response.json() == []
 
@@ -28,7 +29,7 @@ def test_add_menu(test_client, menu_id, delete_menus):
 
 
 def test_get_menu_list(test_client, menu_id):
-    response = test_client.get(reverse(submenu_router.get_submenu_list))
+    response = test_client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
     assert response.json() == [
         {

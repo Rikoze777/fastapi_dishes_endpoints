@@ -3,8 +3,8 @@ import json
 from fastapi import Depends
 from pydantic import UUID4
 
-from app.crud.menu_crud import MenuRepositary
 from app.database.db import get_redis
+from app.repository.menu_repo import MenuRepositary
 from app.schemas import schemas
 
 

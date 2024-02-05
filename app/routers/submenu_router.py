@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
-from app.crud.exceptions import SubmenuExistsException
+from app.repository.exceptions import SubmenuExistsException
 from app.schemas import schemas
 from app.services.submenu import SubmenuService
 

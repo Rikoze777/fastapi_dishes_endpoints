@@ -5,9 +5,9 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import label
 
-from app.crud.exceptions import MenuExistsException
 from app.database.db import get_db
 from app.database.models import Dishes, Menu, Submenu
+from app.repository.exceptions import MenuExistsException
 from app.schemas.schemas import MenuCreate, MenuUpdate
 
 

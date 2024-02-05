@@ -48,9 +48,6 @@ services:
       - 6379
     ports:
       - "8100:6379"
-    command: redis-server /usr/local/etc/redis/redis.conf
-    networks:
-      - common_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

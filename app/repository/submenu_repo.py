@@ -3,9 +3,9 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
 from sqlalchemy.orm import Session
 
-from app.crud.exceptions import SubmenuExistsException
 from app.database.db import get_db
 from app.database.models import Dishes, Submenu
+from app.repository.exceptions import SubmenuExistsException
 from app.schemas.schemas import SubmenuCreate, SubmenuUpdate
 
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
-from app.crud.exceptions import DishExistsException
+from app.repository.exceptions import DishExistsException
 from app.schemas import schemas
 from app.services.dish import DishesService
 

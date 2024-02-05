@@ -2,9 +2,9 @@ from fastapi import Depends
 from pydantic import UUID4
 from sqlalchemy.orm import Session
 
-from app.crud.exceptions import DishExistsException
 from app.database.db import get_db
 from app.database.models import Dishes
+from app.repository.exceptions import DishExistsException
 from app.schemas.schemas import DishesCreate, DishesUpdate
 
 

@@ -4,8 +4,8 @@ from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
 
-from app.crud.dishes_crud import DishesRepository
 from app.database.db import get_redis
+from app.repository.dishes_repo import DishesRepository
 from app.schemas import schemas
 
 
