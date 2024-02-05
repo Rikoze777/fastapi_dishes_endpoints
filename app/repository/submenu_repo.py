@@ -16,6 +16,16 @@ class SubmenuRepositary:
     def get_submenu(self,
                     menu_id: UUID4,
                     submenu_id: UUID4):
+        """
+        Get a submenu by menu_id and submenu_id and return its details along with the count of dishes.
+
+        Args:
+            menu_id (UUID4): The ID of the menu.
+            submenu_id (UUID4): The ID of the submenu.
+
+        Returns:
+            dict: Details of the submenu along with the count of dishes.
+        """
         submenu = self.session.query(Submenu)\
                               .filter(Submenu.menu_id == menu_id)\
                               .filter(Submenu.id == submenu_id).first()
@@ -31,6 +41,12 @@ class SubmenuRepositary:
         return result
 
     def get_submenu_list(self, id: UUID4):
+        """
+        Get a list of submenu items for the given menu ID.
+
+        :param id: UUID4 - The ID of the menu for which to retrieve submenu items.
+        :return: list - A list of submenu items associated with the given menu ID.
+        """
         all_submenu = self.session.query(Submenu)\
             .filter(Submenu.menu_id == id).all()
         if not all_submenu:
@@ -43,6 +59,16 @@ class SubmenuRepositary:
     def create_submenu(self,
                        menu_id: UUID4,
                        submenu: SubmenuCreate):
+        """
+        Creates a new submenu for a given menu ID and submenu data.
+
+        :param menu_id: The UUID of the menu to which the submenu belongs.
+        :type menu_id: UUID4
+        :param submenu: The data for the new submenu.
+        :type submenu: SubmenuCreate
+        :return: The newly created submenu.
+        :rtype: Submenu
+        """
         new_submenu = Submenu(**submenu.model_dump())
         new_submenu.dishes_count = 0
         new_submenu.menu_id = menu_id
@@ -55,6 +81,17 @@ class SubmenuRepositary:
                        menu_id: UUID4,
                        submenu_id: UUID4,
                        update_submenu: SubmenuUpdate):
+        """
+        Update a submenu in the database.
+
+        Args:
+            menu_id (UUID4): The ID of the menu to which the submenu belongs.
+            submenu_id (UUID4): The ID of the submenu to update.
+            update_submenu (SubmenuUpdate): The updated information for the submenu.
+
+        Returns:
+            Submenu: The updated submenu object.
+        """
         db_submenu = self.session.query(Submenu)\
                                  .filter(Submenu.menu_id == menu_id)\
                                  .filter(Submenu.id == submenu_id).first()
@@ -71,6 +108,16 @@ class SubmenuRepositary:
     def delete_submenu(self,
                        menu_id: UUID4,
                        submenu_id: UUID4):
+        """
+        Delete a submenu from the database.
+
+        Args:
+            menu_id (UUID4): The ID of the menu containing the submenu.
+            submenu_id (UUID4): The ID of the submenu to be deleted.
+
+        Returns:
+            None
+        """
         db_submenu = self.session.query(Submenu)\
                                  .filter(Submenu.menu_id == menu_id)\
                                  .filter(Submenu.id == submenu_id)\

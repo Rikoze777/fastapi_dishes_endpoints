@@ -16,6 +16,15 @@ class MenuRepositary:
         self.session = session
 
     def get_menu(self, id: UUID4):
+        """
+        Get menu by ID and return its details including submenus and dishes count.
+
+        Args:
+            id (UUID4): The unique identifier of the menu to retrieve.
+
+        Returns:
+            dict: A dictionary containing the menu details, submenus count, and dishes count.
+        """
         menu = self.session.query(Menu).get(id)
         if not menu:
             raise MenuExistsException()
@@ -39,6 +48,15 @@ class MenuRepositary:
         return result
 
     def get_complex_query(self, menu_id: UUID4):
+        """
+        Retrieve a complex query based on the provided menu ID.
+
+        Args:
+            menu_id (UUID4): The ID of the menu to retrieve the complex query for.
+
+        Returns:
+            tuple: A tuple containing Menu object, submenu count, and dishes count.
+        """
 
         menus = (
             self.session.query(
@@ -55,6 +73,9 @@ class MenuRepositary:
         return menus
 
     def get_menu_list(self):
+        """
+        Retrieves a list of all menus available, and returns an empty list if there are no menus.
+        """
         all_menu = self.session.query(Menu).all()
         if not all_menu:
             return []
@@ -63,6 +84,15 @@ class MenuRepositary:
             return list_menu
 
     def create_menu(self, menu: MenuCreate):
+        """
+        Create a new menu using the provided MenuCreate object.
+
+        Parameters:
+            menu (MenuCreate): The MenuCreate object used to create the new menu.
+
+        Returns:
+            Menu: The newly created menu object.
+        """
         new_menu = Menu(**menu.model_dump())
         self.session.add(new_menu)
         self.session.commit()
@@ -70,6 +100,16 @@ class MenuRepositary:
         return new_menu
 
     def update_menu(self, id: UUID4, update_menu: MenuUpdate):
+        """
+        Updates the menu with the given ID using the provided menu update data.
+
+        Args:
+            id (UUID4): The ID of the menu to be updated.
+            update_menu (MenuUpdate): The data with which to update the menu.
+
+        Returns:
+            Menu: The updated menu.
+        """
         db_menu = self.session.query(Menu).filter(Menu.id == id).first()
         db_menu.title = update_menu.title
         db_menu.description = update_menu.description
@@ -79,6 +119,15 @@ class MenuRepositary:
         return db_menu
 
     def delete_menu(self, id: UUID4):
+        """
+        Deletes a menu item from the database.
+
+        Args:
+            id (UUID4): The unique identifier of the menu item to be deleted.
+
+        Returns:
+            None
+        """
         db_menu = self.session.query(Menu).filter(Menu.id == id).first()
         self.session.delete(db_menu)
         self.session.commit()
