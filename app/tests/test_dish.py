@@ -59,7 +59,7 @@ def test_get_dish_list(test_client, menu_id, submenu_id, dish_id):
     assert response.status_code == 200
     assert response.json() == [
         {
-            'id': f'{dish_id}',
+            'id': dish_id,
             'title': 'Test dish',
             'description': 'Test description dish',
             'price': '16.11'

@@ -25,15 +25,17 @@ class DishesService:
         :param dish_id: The UUID of the dish to retrieve.
         :return: A schemas.Dishes object representing the retrieved dish.
         """
-        if not self.cache.get(dish_id):
-            dish = self.repository.get_dish(submenu_id, dish_id)
-            dish.price = f'{float(dish.price):.2f}'
-            dish = jsonable_encoder(dish)
-            self.cache.set(dish_id, dish)
-            self.cache.expire(dish_id, 300)
-            return dish
+        key = str(dish_id)
+        dish = self.cache.get(key)
+        if not dish:
+            dishh = self.repository.get_dish(submenu_id, dish_id)
+            dishh.price = f'{float(dishh.price):.2f}'
+            dishh = jsonable_encoder(dishh)
+            self.cache.set(key, json.dumps(dishh))
+            self.cache.expire(key, 300)
+            return dishh
         else:
-            return json.loads(self.cache.get(dish_id))
+            return json.loads(dish.decode('utf-8'))
 
     def get_dishes_list(self,
                         submenu_id: UUID4) -> list:
@@ -46,15 +48,17 @@ class DishesService:
         Returns:
             list: A list of dishes for the given submenu ID.
         """
-        if not self.cache.get('dishes'):
+        dishes = self.cache.get('dishes')
+        if not dishes:
             dishes = self.repository.get_dishes_list(submenu_id)
             for dish in dishes:
                 dish.price = f'{float(dish.price):.2f}'
+            dishes = jsonable_encoder(dishes)
             self.cache.set('dishes', json.dumps(dishes))
             self.cache.expire('dishes', 300)
             return dishes
         else:
-            return json.loads(self.cache.get('dishes'))
+            return json.loads(dishes.decode('utf-8'))
 
     def create_dish(self,
                     submenu_id: UUID4,
@@ -72,6 +76,7 @@ class DishesService:
         result = self.repository.create_dish(submenu_id, dish)
         self.cache.delete('menu', 'submenu', 'dishes')
         dish_get = self.repository.get_dish(submenu_id, result.id)
+        dish_get.price = f'{float(dish_get.price):.2f}'
         return dish_get
 
     def update_dish(self,
@@ -93,6 +98,7 @@ class DishesService:
         self.cache.delete(str(dish_id))
         self.cache.delete('dishes')
         dish_get = self.repository.get_dish(submenu_id, result.id)
+        dish_get.price = f'{float(dish_get.price):.2f}'
         return dish_get
 
     def delete_dish(self, submenu_id: UUID4, dish_id: UUID4):

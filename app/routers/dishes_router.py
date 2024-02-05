@@ -33,7 +33,7 @@ def get_dishes_list(submenu_id: UUID4,
 
 
 @router.get(
-    '/dishes/{id}',
+    '/dishes/{dish_id}',
     response_model=schemas.Dishes,
     name='Блюдо по id',
 )
@@ -82,7 +82,7 @@ def add_dish(submenu_id: UUID4,
 
 
 @router.patch(
-    '/dishes/{id}',
+    '/dishes/{dish_id}',
     response_model=schemas.Dishes,
     name='Обновить блюдо',
 )
@@ -102,11 +102,11 @@ def update_dish(submenu_id: UUID4,
 
 
 @router.delete(
-    '/dishes/{id}',
+    '/dishes/{dish_id}',
     name='Удалить блюдо',
 )
 def delete_dish(submenu_id: UUID4,
-                dishes_id: UUID4,
+                dish_id: UUID4,
                 dishes: DishesService = Depends()):
     """
     A function to delete a dish from the database.
@@ -119,7 +119,7 @@ def delete_dish(submenu_id: UUID4,
     Returns:
         JSONResponse: The response indicating the status of the deletion operation.
     """
-    dishes.delete_dish(submenu_id, dishes_id)
+    dishes.delete_dish(submenu_id, dish_id)
     return JSONResponse(
         status_code=200,
         content={'status': 'true', 'message': 'The dish has been deleted'}

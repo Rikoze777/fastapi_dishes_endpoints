@@ -106,7 +106,7 @@ class MenuService:
         query = self.repository.get_complex_query(menu_id)
         menu, submenu_count, dishes_count = query
         menu_dict = {
-            'id': id,
+            'id': menu_id,
             'title': menu.title,
             'description': menu.description,
             'submenus_count': submenu_count,
