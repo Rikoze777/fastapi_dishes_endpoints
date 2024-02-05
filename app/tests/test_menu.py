@@ -9,7 +9,7 @@ MENU_UPDATE_DATA = {'title': 'Test update menu',
 
 
 def test_get_empty_menu(test_client, delete_menus):
-    response = test_client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
+    response = test_client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
     assert response.json() == []
 
@@ -41,7 +41,7 @@ def test_get_menu_list(test_client, menu_id):
 
 
 def test_get_menu(test_client, menu_id):
-    response = test_client.get(reverse(menu_router.get_menu, menu_id=menu_id))
+    response = test_client.get(reverse(menu_router.get_menu, id=menu_id))
     assert response.status_code == 200
     menu = response.json()
     assert 'submenus_count' in menu
@@ -50,7 +50,8 @@ def test_get_menu(test_client, menu_id):
 
 def test_update_menu(test_client, menu_id):
     data = MENU_UPDATE_DATA
-    response = test_client.patch(reverse(menu_router.update_menu, menu_id=menu_id), json=data)
+    response = test_client.patch(reverse(menu_router.update_menu, id=menu_id),
+                                 json=data)
     assert response.status_code == 200
     menu = response.json()
     assert menu['title'] == data['title']
@@ -74,7 +75,7 @@ def test_get_update_menu_list(test_client, menu_id):
 
 
 def test_delete_menu(test_client, menu_id):
-    response = test_client.delete(reverse(menu_router.delete_menu, menu_id=menu_id))
+    response = test_client.delete(reverse(menu_router.delete_menu, id=menu_id))
     assert response.status_code == 200
     assert response.json() == {'status': 'true',
                                'message': 'Menu has been deleted'}
