@@ -72,3 +72,7 @@ class DishesUpdate(BaseModel):
 
 class Cache(BaseModel):
     key: str
+
+
+class NotFoundError(BaseModel):
+    detail: str

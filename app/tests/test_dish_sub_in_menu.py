@@ -1,3 +1,6 @@
+from fastapi.testclient import TestClient
+from pydantic import UUID4
+
 from app.routers import dishes_router, menu_router, submenu_router
 from app.tests.test_dish import TEST_DISH_ID
 from app.tests.test_menu import MENU_CREATE_DATA, TEST_MENU_ID
@@ -12,7 +15,8 @@ DISH_CREATE_DATA_SECOND = {'title': 'Test dish 2',
                            'price': '16.333'}
 
 
-def test_add_menu(test_client, delete_menus):
+def test_add_menu(test_client: TestClient,
+                  delete_menus: None) -> None:
     data = MENU_CREATE_DATA
     response = test_client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
@@ -24,7 +28,8 @@ def test_add_menu(test_client, delete_menus):
     assert 'dishes_count' in menu
 
 
-def test_add_submenu(test_client, menu_id):
+def test_add_submenu(test_client: TestClient,
+                     menu_id: UUID4) -> None:
     data = SUBMENU_CREATE_DATA
     response = test_client.post(reverse(submenu_router.add_submenu,
                                         menu_id=menu_id),
@@ -37,7 +42,9 @@ def test_add_submenu(test_client, menu_id):
     assert 'dishes_count' in menu
 
 
-def test_add_dish_first(test_client, menu_id, submenu_id):
+def test_add_dish_first(test_client: TestClient,
+                        menu_id: UUID4,
+                        submenu_id: UUID4) -> None:
     data = DISH_CREATE_DATA
     response = test_client.post(reverse(dishes_router.add_dish,
                                         menu_id=menu_id,
@@ -52,7 +59,9 @@ def test_add_dish_first(test_client, menu_id, submenu_id):
     assert dish['price'] == str(round(float(data['price']), 2))
 
 
-def test_add_dish_second(test_client, menu_id, submenu_id):
+def test_add_dish_second(test_client: TestClient,
+                         menu_id: UUID4,
+                         submenu_id: UUID4) -> None:
     data = DISH_CREATE_DATA_SECOND
     response = test_client.post(reverse(dishes_router.add_dish,
                                         menu_id=menu_id,
@@ -67,7 +76,8 @@ def test_add_dish_second(test_client, menu_id, submenu_id):
     assert dish['price'] == str(round(float(data['price']), 2))
 
 
-def test_menu_complex_data(test_client, menu_id):
+def test_menu_complex_data(test_client: TestClient,
+                           menu_id: UUID4) -> None:
     menu = MENU_CREATE_DATA
     response = test_client.get(reverse(menu_router.get_menu_counts,
                                        id=menu_id))

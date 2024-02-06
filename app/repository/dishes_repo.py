@@ -12,7 +12,7 @@ class DishesRepository:
     def __init__(self, session: Session = Depends(get_db)):
         self.session = session
 
-    def get_dish(self, submenu_id: UUID4, id: UUID4):
+    def get_dish(self, submenu_id: UUID4, id: UUID4) -> Dishes:
         """
         Retrieves a dish from the database based on the provided submenu_id and id.
 
@@ -33,7 +33,7 @@ class DishesRepository:
             raise DishExistsException()
         return dish
 
-    def create_dish(self, submenu_id: UUID4, dish: DishesCreate):
+    def create_dish(self, submenu_id: UUID4, dish: DishesCreate) -> Dishes:
         """
         Create a new dish for a given submenu and add it to the database.
 
@@ -54,7 +54,7 @@ class DishesRepository:
     def update_dish(self,
                     submenu_id: UUID4,
                     dish_id: UUID4,
-                    update_dish: DishesUpdate):
+                    update_dish: DishesUpdate) -> Dishes:
         """
         Updates a dish in the submenu with the given submenu_id and dish_id using the provided DishesUpdate object.
 
@@ -78,7 +78,7 @@ class DishesRepository:
             self.session.refresh(db_dish)
         return db_dish
 
-    def get_dishes_list(self, submenu_id: UUID4):
+    def get_dishes_list(self, submenu_id: UUID4) -> list[Dishes]:
         """
         Retrieves a list of dishes based on the provided submenu ID.
 
@@ -98,7 +98,7 @@ class DishesRepository:
                            for dish in all_dishes]
             return list_dishes
 
-    def delete_dish(self, submenu_id: UUID4, id: UUID4):
+    def delete_dish(self, submenu_id: UUID4, id: UUID4) -> None:
         """
         Deletes a dish from the database.
 

@@ -38,7 +38,7 @@ class DishesService:
             return json.loads(dish.decode('utf-8'))
 
     def get_dishes_list(self,
-                        submenu_id: UUID4) -> list:
+                        submenu_id: UUID4) -> list[schemas.Dishes]:
         """
         Get a list of dishes for a given submenu ID.
 
@@ -101,7 +101,7 @@ class DishesService:
         dish_get.price = f'{float(dish_get.price):.2f}'
         return dish_get
 
-    def delete_dish(self, submenu_id: UUID4, dish_id: UUID4):
+    def delete_dish(self, submenu_id: UUID4, dish_id: UUID4) -> None:
         """
         Deletes a dish from the submenu and updates the cache accordingly.
 

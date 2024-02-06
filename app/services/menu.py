@@ -1,9 +1,11 @@
 import json
+from typing import Any
 
 from fastapi import Depends
 from pydantic import UUID4
 
 from app.database.db import get_redis
+from app.database.models import Menu
 from app.repository.menu_repo import MenuRepositary
 from app.schemas import schemas
 
@@ -13,7 +15,7 @@ class MenuService:
         self.repository = repository
         self.cache = get_redis()
 
-    def get_menu(self, id: UUID4) -> schemas.Menu:
+    def get_menu(self, id: UUID4) -> dict[schemas.Menu, Any]:
         """
         Retrieves a menu from the repository by its ID and caches the result for 5 minutes if not already cached.
 
@@ -47,7 +49,7 @@ class MenuService:
         else:
             return json.loads(self.cache.get('menu'))
 
-    def create_menu(self, menu: schemas.MenuCreate) -> schemas.MenuCreate:
+    def create_menu(self, menu: schemas.MenuCreate) -> dict[Menu, Any]:
         """
         Create a menu and return the created menu object.
 
@@ -63,7 +65,7 @@ class MenuService:
 
     def update_menu(self,
                     id: UUID4,
-                    menu: schemas.MenuUpdate) -> schemas.MenuUpdate:
+                    menu: schemas.MenuUpdate) -> dict[Menu, Any]:
         """
         Update a menu in the repository and cache and return the updated menu.
 
@@ -80,7 +82,7 @@ class MenuService:
         self.cache.delete('menu')
         return self.repository.get_menu(id)
 
-    def delete_menu(self, id: UUID4):
+    def delete_menu(self, id: UUID4) -> None:
         """
         Delete a menu by its ID.
 
@@ -95,7 +97,7 @@ class MenuService:
         self.cache.delete(menu_id)
         self.cache.delete('menu', 'submenu', 'dishes')
 
-    def get_complex_query(self, menu_id: UUID4) -> dict:
+    def get_complex_query(self, menu_id: UUID4) -> dict[str, Any]:
         """
         Get a complex query for a menu by its ID and return a dictionary with menu details, submenu count, and dishes count.
 

@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
+from app.database.models import Menu
 from app.repository.exceptions import MenuExistsException
 from app.schemas import schemas
 from app.services.menu import MenuService
@@ -15,9 +18,10 @@ router = APIRouter(
 @router.get(
     '/',
     response_model=list[schemas.Menu],
+    responses={404: {'model': schemas.NotFoundError}},
     name='Список меню',
 )
-def get_menu_list(menu: MenuService = Depends()):
+def get_menu_list(menu: MenuService = Depends()) -> list[schemas.Menu]:
     """
     A function to retrieve a list of menus using the MenuService dependency.
     """
@@ -28,9 +32,10 @@ def get_menu_list(menu: MenuService = Depends()):
     '/',
     response_model=schemas.Menu,
     name='Создать меню',
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
-def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
+def add_menu(data: schemas.MenuCreate,
+             menu: MenuService = Depends()) -> dict[Menu, Any]:
     """
     A function to add a menu using the provided data and MenuService instance.
 
@@ -47,9 +52,11 @@ def add_menu(data: schemas.MenuCreate, menu: MenuService = Depends()):
 @router.get(
     '/{id}/',
     response_model=schemas.Menu,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Меню по id',
 )
-def get_menu(id: UUID4, menu: MenuService = Depends()):
+def get_menu(id: UUID4,
+             menu: MenuService = Depends()) -> dict[Menu, Any]:
     """
     A function to get the menu by its ID using MenuService dependency.
 
@@ -64,20 +71,21 @@ def get_menu(id: UUID4, menu: MenuService = Depends()):
         HTTPException: If the menu is not found.
     """
     try:
-        menu = menu.get_menu(id)
+        return_menu = menu.get_menu(id)
     except MenuExistsException:
         raise HTTPException(status_code=404, detail='menu not found')
-    return menu
+    return return_menu
 
 
 @router.patch(
     '/{id}/',
     response_model=schemas.Menu,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Обновить меню',
 )
 def update_menu(id: UUID4,
                 data: schemas.MenuUpdate,
-                menu: MenuService = Depends()):
+                menu: MenuService = Depends()) -> dict[Menu, Any]:
     """
     Update a menu with the given ID using the provided data.
 
@@ -101,9 +109,11 @@ def update_menu(id: UUID4,
 
 @router.delete(
     '/{id}/',
+    responses={404: {'model': schemas.NotFoundError}},
     name='Удалить меню',
 )
-def delete_menu(id: UUID4, menu: MenuService = Depends()):
+def delete_menu(id: UUID4,
+                menu: MenuService = Depends()) -> JSONResponse:
     """
     Delete a menu by its ID.
 
@@ -123,8 +133,10 @@ def delete_menu(id: UUID4, menu: MenuService = Depends()):
 
 @router.get(
     '/{id}/count',
+    responses={404: {'model': schemas.NotFoundError}},
     name='Посчитать подменю и блюда')
-def get_menu_counts(id: UUID4, menu: MenuService = Depends()) -> dict:
+def get_menu_counts(id: UUID4,
+                    menu: MenuService = Depends()) -> dict[str, Any]:
     """
     A function to retrieve menu counts based on the provided ID and menu service.
 

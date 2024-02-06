@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import UUID4
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
@@ -48,28 +49,31 @@ def test_client(db_session):
 
 
 @pytest.fixture()
-def delete_menus(test_client):
+def delete_menus(test_client: TestClient) -> None:
     response = test_client.get('/api/v1/menus')
     for menu in response.json():
         test_client.delete(f"/api/v1/menus/{menu['id']}/")
 
 
 @pytest.fixture()
-def menu_id(test_client):
+def menu_id(test_client: TestClient) -> UUID4:
     response = test_client.get('/api/v1/menus')
     for menu in response.json():
         return menu['id']
 
 
 @pytest.fixture()
-def submenu_id(test_client, menu_id):
+def submenu_id(test_client: TestClient, menu_id: UUID4) -> UUID4:
     response = test_client.get(f'/api/v1/menus/{menu_id}/submenus')
     for submenu in response.json():
         return submenu['id']
 
 
 @pytest.fixture()
-def dish_id(test_client, menu_id, submenu_id):
-    response = test_client.get(f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/')
+def dish_id(test_client: TestClient,
+            menu_id: UUID4,
+            submenu_id: UUID4) -> UUID4:
+    dishes_url = f'/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/'
+    response = test_client.get(dishes_url)
     for dish in response.json():
         return dish['id']

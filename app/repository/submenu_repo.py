@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
@@ -15,7 +17,7 @@ class SubmenuRepositary:
 
     def get_submenu(self,
                     menu_id: UUID4,
-                    submenu_id: UUID4):
+                    submenu_id: UUID4) -> dict[Submenu, Any]:
         """
         Get a submenu by menu_id and submenu_id and return its details along with the count of dishes.
 
@@ -40,7 +42,7 @@ class SubmenuRepositary:
             result['dishes_count'] = len(dishes)
         return result
 
-    def get_submenu_list(self, id: UUID4):
+    def get_submenu_list(self, id: UUID4) -> list[dict[Submenu, Any]]:
         """
         Get a list of submenu items for the given menu ID.
 
@@ -58,7 +60,7 @@ class SubmenuRepositary:
 
     def create_submenu(self,
                        menu_id: UUID4,
-                       submenu: SubmenuCreate):
+                       submenu: SubmenuCreate) -> Submenu:
         """
         Creates a new submenu for a given menu ID and submenu data.
 
@@ -80,7 +82,7 @@ class SubmenuRepositary:
     def update_submenu(self,
                        menu_id: UUID4,
                        submenu_id: UUID4,
-                       update_submenu: SubmenuUpdate):
+                       update_submenu: SubmenuUpdate) -> Submenu:
         """
         Update a submenu in the database.
 
@@ -107,7 +109,7 @@ class SubmenuRepositary:
 
     def delete_submenu(self,
                        menu_id: UUID4,
-                       submenu_id: UUID4):
+                       submenu_id: UUID4) -> None:
         """
         Delete a submenu from the database.
 

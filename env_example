@@ -5,8 +5,8 @@ POSTGRES_PASSWORD="qwerty"
 POSTGRES_DB_TEST="dishes_test"
 POSTGRES_HOST="dishes-app-db"
 POSTGRES_PORT=5433
-REDIS_HOST="redis"
-REDIS_PORT="6379"
+REDIS_HOST="dishes-app-redis"
+REDIS_PORT=6379
 POSTGRES_URL="postgresql+psycopg2://riko:qwerty@dishes-app-db:5432/menu"
 TESTBASE_URL="postgresql+psycopg2://riko:qwerty@dishes-app-db:5432/dishes_test"
 
