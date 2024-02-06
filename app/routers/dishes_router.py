@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
@@ -15,6 +15,7 @@ router = APIRouter(
 @router.get(
     '/dishes',
     response_model=list[schemas.Dishes],
+    responses={404: {'model': schemas.NotFoundError}},
     name='Список блюд',
 )
 def get_dishes_list(submenu_id: UUID4,
@@ -35,6 +36,7 @@ def get_dishes_list(submenu_id: UUID4,
 @router.get(
     '/dishes/{dish_id}',
     response_model=schemas.Dishes,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Блюдо по id',
 )
 def get_dish(submenu_id: UUID4,
@@ -62,7 +64,7 @@ def get_dish(submenu_id: UUID4,
     '/dishes',
     response_model=schemas.Dishes,
     name='Создать блюдо',
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def add_dish(submenu_id: UUID4,
              data: schemas.DishesCreate,
@@ -84,6 +86,7 @@ def add_dish(submenu_id: UUID4,
 @router.patch(
     '/dishes/{dish_id}',
     response_model=schemas.Dishes,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Обновить блюдо',
 )
 def update_dish(submenu_id: UUID4,
@@ -103,11 +106,12 @@ def update_dish(submenu_id: UUID4,
 
 @router.delete(
     '/dishes/{dish_id}',
+    responses={404: {'model': schemas.NotFoundError}},
     name='Удалить блюдо',
 )
 def delete_dish(submenu_id: UUID4,
                 dish_id: UUID4,
-                dishes: DishesService = Depends()):
+                dishes: DishesService = Depends()) -> JSONResponse:
     """
     A function to delete a dish from the database.
 

@@ -1,3 +1,6 @@
+from fastapi.testclient import TestClient
+from pydantic import UUID4
+
 from app.routers import menu_router, submenu_router
 from app.tests.test_menu import MENU_CREATE_DATA, TEST_MENU_ID
 from app.tests.utils import reverse
@@ -9,14 +12,17 @@ SUBMENU_UPDATE_DATA = {'title': 'Test update submenu',
                        'description': 'Test update description submenu'}
 
 
-def test_get_empty_submenu(test_client, delete_menus):
+def test_get_empty_submenu(test_client: TestClient,
+                           delete_menus: None) -> None:
     response = test_client.get(reverse(submenu_router.get_submenu_list,
                                        menu_id=TEST_MENU_ID))
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_add_menu(test_client, menu_id, delete_menus):
+def test_add_menu(test_client: TestClient,
+                  menu_id: UUID4,
+                  delete_menus: None) -> None:
     data = MENU_CREATE_DATA
     response = test_client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
@@ -28,7 +34,8 @@ def test_add_menu(test_client, menu_id, delete_menus):
     assert 'dishes_count' in menu
 
 
-def test_get_menu_list(test_client, menu_id):
+def test_get_menu_list(test_client: TestClient,
+                       menu_id: UUID4) -> None:
     response = test_client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
     assert response.json() == [
@@ -42,7 +49,8 @@ def test_get_menu_list(test_client, menu_id):
     ]
 
 
-def test_add_submenu(test_client, menu_id):
+def test_add_submenu(test_client: TestClient,
+                     menu_id: UUID4) -> None:
     data = SUBMENU_CREATE_DATA
     response = test_client.post(reverse(submenu_router.add_submenu,
                                         menu_id=menu_id),
@@ -55,7 +63,9 @@ def test_add_submenu(test_client, menu_id):
     assert 'dishes_count' in menu
 
 
-def test_get_submenu_list(test_client, menu_id, submenu_id):
+def test_get_submenu_list(test_client: TestClient,
+                          menu_id: UUID4,
+                          submenu_id: UUID4) -> None:
     response = test_client.get(reverse(submenu_router.get_submenu_list,
                                        menu_id=menu_id))
     assert response.status_code == 200
@@ -69,7 +79,9 @@ def test_get_submenu_list(test_client, menu_id, submenu_id):
     ]
 
 
-def test_get_submenu(test_client, menu_id, submenu_id):
+def test_get_submenu(test_client: TestClient,
+                     menu_id: UUID4,
+                     submenu_id: UUID4) -> None:
     response = test_client.get(reverse(submenu_router.get_submenu,
                                        menu_id=menu_id,
                                        submenu_id=submenu_id))
@@ -78,7 +90,9 @@ def test_get_submenu(test_client, menu_id, submenu_id):
     assert 'dishes_count' in menu
 
 
-def test_update_submenu(test_client, menu_id, submenu_id):
+def test_update_submenu(test_client: TestClient,
+                        menu_id: UUID4,
+                        submenu_id: UUID4) -> None:
     data = SUBMENU_UPDATE_DATA
     response = test_client.patch(reverse(submenu_router.update_submenu,
                                          menu_id=menu_id,
@@ -91,7 +105,9 @@ def test_update_submenu(test_client, menu_id, submenu_id):
     assert 'dishes_count' in menu
 
 
-def test_get_updated_submenu(test_client, menu_id, submenu_id):
+def test_get_updated_submenu(test_client: TestClient,
+                             menu_id: UUID4,
+                             submenu_id: UUID4) -> None:
     response = test_client.get(reverse(submenu_router.get_submenu,
                                        menu_id=menu_id,
                                        submenu_id=submenu_id))
@@ -100,7 +116,8 @@ def test_get_updated_submenu(test_client, menu_id, submenu_id):
     assert 'dishes_count' in menu
 
 
-def test_get_submenu_not_exists(test_client, delete_menus):
+def test_get_submenu_not_exists(test_client: TestClient,
+                                delete_menus: None) -> None:
     response = test_client.get(reverse(submenu_router.get_submenu,
                                        menu_id=TEST_MENU_ID,
                                        submenu_id=TEST_SUBMENU_ID))

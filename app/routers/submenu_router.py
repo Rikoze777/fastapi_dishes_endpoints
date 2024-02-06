@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
+from app.database.models import Submenu
 from app.repository.exceptions import SubmenuExistsException
 from app.schemas import schemas
 from app.services.submenu import SubmenuService
@@ -15,10 +18,12 @@ router = APIRouter(
 @router.get(
     '/{menu_id}/submenus',
     response_model=list[schemas.Submenu],
+    responses={404: {'model': schemas.NotFoundError}},
     name='Просмотр списка подменю',
 )
 def get_submenu_list(menu_id: UUID4,
-                     submenu: SubmenuService = Depends()) -> list[schemas.Submenu]:
+                     submenu: SubmenuService = Depends())\
+        -> list[dict[Submenu, Any]]:
     """
     Retrieve a list of submenus for a specific menu ID.
 
@@ -37,11 +42,11 @@ def get_submenu_list(menu_id: UUID4,
     '/{menu_id}/submenus',
     response_model=schemas.Submenu,
     name='Создать подменю',
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
 )
 def add_submenu(menu_id: UUID4,
                 data: schemas.SubmenuCreate,
-                submenu: SubmenuService = Depends()) -> schemas.Submenu:
+                submenu: SubmenuService = Depends()) -> dict[Submenu, Any]:
     """
     A function to add a submenu to a menu, taking the menu ID, submenu data, and submenu service as parameters, and returning the created submenu.
     """
@@ -52,11 +57,12 @@ def add_submenu(menu_id: UUID4,
 @router.get(
     '/{menu_id}/submenus/{submenu_id}/',
     response_model=schemas.Submenu,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Просмотр подменю по id',
 )
 def get_submenu(menu_id: UUID4,
                 submenu_id: UUID4,
-                submenu: SubmenuService = Depends()) -> schemas.Submenu:
+                submenu: SubmenuService = Depends()) -> dict[Submenu, Any]:
     """
     A function to get a submenu by menu_id and submenu_id, using SubmenuService dependency.
 
@@ -81,12 +87,13 @@ def get_submenu(menu_id: UUID4,
 @router.patch(
     '/{menu_id}/submenus/{submenu_id}/',
     response_model=schemas.Submenu,
+    responses={404: {'model': schemas.NotFoundError}},
     name='Обновить подменю',
 )
 def update_submenu(menu_id: UUID4,
                    submenu_id: UUID4,
                    data: schemas.SubmenuUpdate,
-                   submenu: SubmenuService = Depends()) -> schemas.Submenu:
+                   submenu: SubmenuService = Depends()) -> dict[Submenu, Any]:
     """
     A function to update a submenu, taking in menu_id, submenu_id, data, and submenu service, and returning the updated submenu.
     """
@@ -100,11 +107,12 @@ def update_submenu(menu_id: UUID4,
 
 @router.delete(
     '/{menu_id}/submenus/{submenu_id}/',
+    responses={404: {'model': schemas.NotFoundError}},
     name='Удаление подменю',
 )
 def delete_submenu(menu_id: UUID4,
                    submenu_id: UUID4,
-                   submenu: SubmenuService = Depends()):
+                   submenu: SubmenuService = Depends()) -> JSONResponse:
     """
     A view function to delete a submenu.
 

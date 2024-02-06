@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from fastapi import Depends
 from pydantic import UUID4
@@ -16,7 +17,7 @@ class SubmenuService:
 
     def get_submenu(self,
                     menu_id: UUID4,
-                    submenu_id: UUID4) -> schemas.Submenu:
+                    submenu_id: UUID4) -> dict[schemas.Submenu, Any]:
         """
         Get a submenu from the repository by menu_id and submenu_id.
 
@@ -36,7 +37,7 @@ class SubmenuService:
             return json.loads(self.cache.get(str(submenu_id)))
 
     def get_submenu_list(self,
-                         menu_id: UUID4) -> list:
+                         menu_id: UUID4) -> list[dict[schemas.Submenu, Any]]:
         """
         Get the list of submenus for a given menu ID.
 
@@ -56,7 +57,7 @@ class SubmenuService:
 
     def create_submenu(self,
                        menu_id: UUID4,
-                       submenu: schemas.SubmenuCreate) -> schemas.Submenu:
+                       submenu: schemas.SubmenuCreate) -> dict[schemas.Submenu, Any]:
         """
         Create a submenu for the given menu_id using the provided submenu information.
 
@@ -74,7 +75,7 @@ class SubmenuService:
     def update_submenu(self,
                        menu_id: UUID4,
                        submenu_id: UUID4,
-                       submenu: schemas.SubmenuUpdate) -> schemas.Submenu:
+                       submenu: schemas.SubmenuUpdate) -> dict[schemas.Submenu, Any]:
         """
         Update a submenu by menu_id and submenu_id with the given submenu data.
 
@@ -95,7 +96,7 @@ class SubmenuService:
 
     def delete_submenu(self,
                        menu_id: UUID4,
-                       submenu_id: UUID4):
+                       submenu_id: UUID4) -> None:
         """
         Deletes a submenu from the menu.
 

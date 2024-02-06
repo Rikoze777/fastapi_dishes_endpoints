@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import Depends
 from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
@@ -15,7 +17,7 @@ class MenuRepositary:
     def __init__(self, session: Session = Depends(get_db)):
         self.session = session
 
-    def get_menu(self, id: UUID4):
+    def get_menu(self, id: UUID4) -> dict[Menu, Any]:
         """
         Get menu by ID and return its details including submenus and dishes count.
 
@@ -47,7 +49,7 @@ class MenuRepositary:
                     result['dishes_count'] = len(dishes)
         return result
 
-    def get_complex_query(self, menu_id: UUID4):
+    def get_complex_query(self, menu_id: UUID4) -> tuple:
         """
         Retrieve a complex query based on the provided menu ID.
 
@@ -72,7 +74,7 @@ class MenuRepositary:
         )
         return menus
 
-    def get_menu_list(self):
+    def get_menu_list(self) -> list[dict[Menu, Any]]:
         """
         Retrieves a list of all menus available, and returns an empty list if there are no menus.
         """
@@ -83,7 +85,7 @@ class MenuRepositary:
             list_menu = [self.get_menu(menu.id) for menu in all_menu]
             return list_menu
 
-    def create_menu(self, menu: MenuCreate):
+    def create_menu(self, menu: MenuCreate) -> Menu:
         """
         Create a new menu using the provided MenuCreate object.
 
@@ -99,7 +101,7 @@ class MenuRepositary:
         self.session.refresh(new_menu)
         return new_menu
 
-    def update_menu(self, id: UUID4, update_menu: MenuUpdate):
+    def update_menu(self, id: UUID4, update_menu: MenuUpdate) -> Menu:
         """
         Updates the menu with the given ID using the provided menu update data.
 
@@ -118,7 +120,7 @@ class MenuRepositary:
         self.session.refresh(db_menu)
         return db_menu
 
-    def delete_menu(self, id: UUID4):
+    def delete_menu(self, id: UUID4) -> None:
         """
         Deletes a menu item from the database.
 

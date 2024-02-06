@@ -10,6 +10,8 @@ services:
     depends_on:
       dishes-app-db:
         condition: service_healthy
+      dishes-app-redis:
+        condition: service_healthy
 
   dishes-app-test:
     build: .
@@ -19,7 +21,7 @@ services:
     depends_on:
       dishes-app-db:
         condition: service_healthy
-      redis:
+      dishes-app-redis:
         condition: service_healthy
 
   dishes-app-db:
@@ -38,16 +40,15 @@ services:
       timeout: 30s
       retries: 3
 
-  redis:
-    container_name: redis
+  dishes-app-redis:
     image: redis:latest
     volumes:
       - ./redis/data:/data
-      - ./redis/redis.conf://usr/local/etc/redis/redis.conf
-    expose:
-      - 6379
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     ports:
-      - "8100:6379"
+      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -56,3 +57,4 @@ services:
 
 volumes:
   dishes-app-db-data:
+  dishes-app-redis:
