@@ -10,6 +10,7 @@ class Config(BaseSettings):
     POSTGRES_DB_TEST: str = "dishes_test"
     POSTGRES_URL: str
     TESTBASE_URL: str
+    TESTBASE_URL_ASYNC: str
     REDIS_HOST: str
     REDIS_PORT: int = 6379
     ENGINE_URL: str

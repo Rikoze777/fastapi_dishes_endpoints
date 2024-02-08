@@ -1,5 +1,5 @@
 import json
-import aioredis
+import redis
 from typing import Any
 from app.config import Config
 from fastapi.encoders import jsonable_encoder
@@ -13,18 +13,18 @@ redis_port = config.REDIS_PORT
 class Cache:
 
     def __init__(self, redis_host: str, redis_port: int):
-        self.redis_client = aioredis.StrictRedis(host=redis_host,
+        self.redis_client = redis.StrictRedis(host=redis_host,
                                                  port=redis_port,
                                                  db=0)
 
     async def get(self, key: str) -> Any:
-        cached_data = await self.redis_client.get(key)
+        cached_data = self.redis_client.get(key)
         if cached_data:
             return cached_data.decode("utf-8")
         return None
 
     async def set(self, key: str, value: Any) -> None:
-        await self.redis_client.set(key, value)
+        self.redis_client.set(key, value)
 
     async def fetch(self,
                     key: str,
@@ -40,8 +40,9 @@ class Cache:
         return data
 
     async def invalidate(self, *args: str) -> None:
-        for key in args:
-            await self.redis_client.delete(key)
+        for input in args:
+            for key in self.redis_client.keys(input):
+                self.redis_client.delete(key)
 
 
 cache_instance = Cache(redis_host, redis_port)

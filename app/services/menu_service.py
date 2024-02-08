@@ -1,11 +1,8 @@
-from tkinter import Menu
-from typing import Annotated
 from fastapi import BackgroundTasks, Depends
-from app.database.db import get_async_session
 from pydantic import UUID4
 from app.repository.menu import MenuRepository
 from app.cache.redis import cache_instance
-from app.schemas.schemas import MenuCreate, MenuUpdate
+from app.schemas.schemas import Menu, MenuCreate, MenuExtended, MenuUpdate
 
 
 class MenuService:
@@ -15,7 +12,7 @@ class MenuService:
         self.cache = cache_instance
 
     async def get_menu_list(self):
-        return await self.cache("menu", self.repository.get_menu_list)
+        return await self.cache.fetch("menu", self.repository.get_menu_list)
 
     async def get(self, menu_id: UUID4) -> Menu:
         return await self.cache.fetch(f"menu_{menu_id}",
@@ -26,7 +23,7 @@ class MenuService:
                      menu_schema: MenuCreate,
                      background_tasks: BackgroundTasks,) -> Menu:
         menu = await self.repository.create_menu(menu_schema)
-        background_tasks.add_task(self.cache.invalidate, "menu", "data")
+        background_tasks.add_task(self.cache.invalidate, "menu")
         return menu
 
     async def update(self,
@@ -37,8 +34,7 @@ class MenuService:
         background_tasks.add_task(
             self.cache.invalidate,
             "menu",
-            f"menu_{menu_id}",
-            "data",
+            f"menu_{menu_id}"
         )
         return item
 
@@ -49,26 +45,21 @@ class MenuService:
         background_tasks.add_task(
             self.cache.invalidate,
             "menu",
-            f"menu_{menu_id}",
-            "data",
+            f"menu_{menu_id}*"
         )
 
+    async def count(self, menu_id: UUID4) -> MenuExtended:
+        return await self.cache.fetch(f"menu_{menu_id}_count", self.get_complex_query, menu_id)
+
     async def get_complex_query(self,
-                                menu_id: UUID4,
-                                background_tasks: BackgroundTasks,) -> Menu:
-        result = self.repository.get_complex_query(menu_id)
+                                menu_id: UUID4) -> MenuExtended:
+        result = await self.repository.get_complex_query(menu_id)
         menu, submenu_count, dishes_count = result
         menu_dict = {
-            "id": id,
+            "id": menu.id,
             "title": menu.title,
             "description": menu.description,
             "submenus_count": submenu_count,
             "dishes_count": dishes_count,
         }
-        background_tasks.add_task(
-            self.cache.invalidate,
-            "menu",
-            f"menu_{menu_id}",
-            "data",
-        )
-        return result
+        return menu_dict

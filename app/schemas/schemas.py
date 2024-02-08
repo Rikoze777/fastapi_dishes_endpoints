@@ -1,9 +1,17 @@
-from typing import Union
+from typing import Optional, Union
 from pydantic import BaseModel
 from pydantic import UUID4
 
 
 class Menu(BaseModel):
+    id: UUID4
+    title: str
+    description: str
+
+    class Config:
+        from_attributes = True
+
+class MenuExtended(BaseModel):
     id: UUID4
     title: str
     description: str
@@ -28,7 +36,6 @@ class Submenu(BaseModel):
     id: UUID4
     title: str
     description: str
-    dishes_count: int
 
     class Config:
         from_attributes = True

@@ -1,14 +1,11 @@
-from tkinter import Menu
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from typing import Annotated, List
-from sqlalchemy.orm import Session
+from typing import List
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 from app.crud.exceptions import MenuExistsException
 
 from app.services.menu_service import MenuService
-from app.schemas import schemas
-from app.database.db import get_async_session
+from app.schemas.schemas import Menu, MenuCreate, MenuExtended, MenuUpdate
 
 
 router = APIRouter(
@@ -19,7 +16,7 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=List[schemas.Menu],
+    response_model=List[Menu],
     name="Список меню",
 )
 async def get_menu_list(menu: MenuService = Depends()) -> List[Menu]:
@@ -28,11 +25,11 @@ async def get_menu_list(menu: MenuService = Depends()) -> List[Menu]:
 
 @router.post(
     "/",
-    response_model=schemas.Menu,
+    response_model=Menu,
     name='Создать меню',
     status_code=201,
 )
-async def add_menu(data: schemas.MenuCreate,
+async def add_menu(data: MenuCreate,
                    background_tasks: BackgroundTasks,
                    menu: MenuService = Depends(),) -> Menu:
     return await menu.create(data, background_tasks)
@@ -40,7 +37,7 @@ async def add_menu(data: schemas.MenuCreate,
 
 @router.get(
     "/{id}/",
-    response_model=schemas.Menu,
+    response_model=Menu,
     name="Меню по id",
 )
 def get_menu(id: UUID4, menu: MenuService = Depends()) -> Menu:
@@ -53,11 +50,11 @@ def get_menu(id: UUID4, menu: MenuService = Depends()) -> Menu:
 
 @router.patch(
     "/{id}/",
-    response_model=schemas.Menu,
+    response_model=Menu,
     name="Обновить меню",
 )
 def update_menu(id: UUID4,
-                data: schemas.MenuUpdate,
+                data: MenuUpdate,
                 background_tasks: BackgroundTasks,
                 menu: MenuService = Depends(),) -> Menu:
     try:
@@ -83,19 +80,9 @@ async def delete_menu(id: UUID4,
 
 @router.get(
         "/{id}/count",
+        response_model=MenuExtended,
         name="Посчитать подменю и блюда")
 async def get_menu_counts(id: UUID4,
-                          background_tasks: BackgroundTasks,
                           menu: MenuService = Depends()):
-    return await menu.get_complex_query(id, background_tasks)
-
-    # menu, submenu_count, dishes_count = menus
-    # menu_dict = {
-    #     "id": id,
-    #     "title": menu.title,
-    #     "description": menu.description,
-    #     "submenus_count": submenu_count,
-    #     "dishes_count": dishes_count,
-    # }
-
-    # return menu_dict
+    menu_extended = await menu.count(id)
+    return menu_extended

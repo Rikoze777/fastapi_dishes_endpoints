@@ -1,22 +1,48 @@
-from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+import logging
+from typing import Annotated, AsyncGenerator, AsyncIterator
+from fastapi import Depends
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy_utils import database_exists, create_database
 from app.config import Config
 
+logger = logging.getLogger(__name__)
+
 config = Config()
 
-engine = create_async_engine(config.ENGINE_URL, echo=False)
+# engine = create_async_engine(config.ENGINE_URL, echo=False)
 
-if not database_exists(config.POSTGRES_URL):
-    create_database(config.POSTGRES_URL)
+# if not database_exists(config.POSTGRES_URL):
+#     create_database(config.POSTGRES_URL)
 
-async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+# async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session() as session:
-        yield session
+# async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+#     async with async_session() as session:
+#         yield session
+
+async_engine = create_async_engine(
+    config.ENGINE_URL,
+    pool_pre_ping=True,
+    echo=True,
+)
+AsyncSessionLocal = async_sessionmaker(
+    bind=async_engine,
+    autoflush=False,
+    expire_on_commit=False,
+    future=True,
+)
+
+
+async def get_session() -> AsyncIterator[async_sessionmaker]:
+    try:
+        yield AsyncSessionLocal
+    except SQLAlchemyError as e:
+        logger.exception(e)
+
+
+AsyncSession = Annotated[async_sessionmaker, Depends(get_session)]
 
 # import contextlib
 # from typing import AsyncIterator
@@ -85,9 +111,6 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 # async def get_db():
 #     async with sessionmanager.session() as session:
 #         yield session
-
-
-
 
 
 # from sqlalchemy import create_engine

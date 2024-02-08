@@ -1,16 +1,21 @@
+from typing import AsyncGenerator, Generator
+from httpx import AsyncClient
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.orm import Session, SessionTransaction
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.database.models import Base
 from app.main import app
-from app.database.db import get_db
+from app.database.db import get_session
 from app.config import Config
 
 
 config = Config()
 target_db = config.POSTGRES_DB_TEST
 testbase_url = config.TESTBASE_URL
+testbase_url_async = config.TESTBASE_URL_ASYNC
+
 postgres_connection_url = config.POSTGRES_URL
 
 
@@ -27,50 +32,81 @@ def test_database():
 @pytest.fixture
 def db_engine():
     engine = create_engine(testbase_url)
-    Base.metadata.create_all(bind=engine)
-    return engine
+    with engine.begin():
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        yield
+        Base.metadata.drop_all(engine)
+
+    engine.dispose()
 
 
 @pytest.fixture
-def db_session(db_engine):
-    return sessionmaker(autocommit=False, autoflush=False, bind=db_engine)()
-
+async def test_client() -> AsyncClient:
+    async with AsyncClient(app=app) as c:
+        yield c
 
 @pytest.fixture
-def test_client(db_session):
-    def override_get_db():
-        try:
-            db = db_session
-            yield db
-        finally:
-            db.close()
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
+async def session() -> AsyncGenerator:
+    async_engine = create_async_engine(testbase_url_async)
+    async with async_engine.connect() as conn:
+        await conn.begin()
+        await conn.begin_nested()
+        AsyncSessionLocal = async_sessionmaker(
+            autocommit=False,
+            autoflush=False,
+            bind=conn,
+            future=True,
+        )
+
+        async_session = AsyncSessionLocal()
+
+        @event.listens_for(async_session.sync_session, "after_transaction_end")
+        def end_savepoint(session: Session, transaction: SessionTransaction) -> None:
+            if conn.closed:
+                return
+            if not conn.in_nested_transaction():
+                if conn.sync_connection:
+                    conn.sync_connection.begin_nested()
+
+        def test_get_session() -> Generator:
+            try:
+                yield AsyncSessionLocal
+            except SQLAlchemyError:
+                pass
+
+        app.dependency_overrides[get_session] = test_get_session
+
+        yield async_session
+        await async_session.close()
+        await conn.rollback()
+
+    await async_engine.dispose()
 
 
 @pytest.fixture()
-def delete_menus(test_client):
-    response = test_client.get("/api/v1/menus/")
+async def delete_menus(test_client):
+    response = await test_client.get("/api/v1/menus/")
     for menu in response.json():
         test_client.delete(f"/api/v1/menus/{menu['id']}/")
 
 
 @pytest.fixture()
-def menu_id(test_client):
-    response = test_client.get("api/v1/menus")
+async def menu_id(test_client):
+    response = await test_client.get("api/v1/menus")
     for menu in response.json():
         return menu['id']
 
 
 @pytest.fixture()
-def submenu_id(test_client, menu_id):
-    response = test_client.get(f"/api/v1/menus/{menu_id}/submenus/")
+async def submenu_id(test_client, menu_id):
+    response = await test_client.get(f"/api/v1/menus/{menu_id}/submenus/")
     for submenu in response.json():
         return submenu['id']
 
 
 @pytest.fixture()
-def dish_id(test_client, menu_id, submenu_id):
-    response = test_client.get(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/")
+async def dish_id(test_client, menu_id, submenu_id):
+    response = await test_client.get(f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/")
     for dish in response.json():
         return dish['id']
