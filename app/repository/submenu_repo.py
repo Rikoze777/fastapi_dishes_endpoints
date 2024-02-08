@@ -20,11 +20,6 @@ class SubmenuRepositary:
             if not submenu:
                 raise SubmenuExistsException()
             result = jsonable_encoder(submenu)
-            dishes = select(Dishes).filter(Dishes.submenu_id == submenu_id).scalars()
-            if not dishes:
-                result["dishes_count"] = 0
-            else:
-                result["dishes_count"] = len(dishes)
             return result
 
     async def get_submenu_list(self, menu_id: UUID4) -> list[Submenu]:

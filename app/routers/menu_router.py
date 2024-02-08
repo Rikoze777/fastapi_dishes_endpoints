@@ -47,7 +47,7 @@ async def add_menu(
 )
 async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[Menu, Any]:
     try:
-        return_menu = await menu.get_menu(id)
+        return_menu = await menu.get(id)
     except MenuExistsException:
         raise HTTPException(status_code=404, detail='menu not found')
     return return_menu
@@ -66,7 +66,7 @@ async def update_menu(
     menu: MenuService = Depends(),
 ) -> dict[Menu, Any]:
     try:
-        up_menu = await menu.update_menu(id, data, background_tasks)
+        up_menu = await menu.update(id, data, background_tasks)
     except MenuExistsException:
         raise HTTPException(status_code=404, detail='menu not found')
     return up_menu
@@ -80,7 +80,7 @@ async def update_menu(
 async def delete_menu(
     id: UUID4, background_tasks: BackgroundTasks, menu: MenuService = Depends()
 ) -> JSONResponse:
-    await menu.delete_menu(id, background_tasks)
+    await menu.delete(id, background_tasks)
     return JSONResponse(
         status_code=200, content={'status': 'true', 'message': 'Menu has been deleted'}
     )

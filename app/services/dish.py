@@ -14,14 +14,14 @@ class DishesService:
 
     async def get_dishes_list(self, menu_id: UUID4, submenu_id: UUID4) -> list[Dishes]:
         return await self.cache.fetch(
-            f'menu_{menu_id}_submenu_{submenu_id}_dish',
+            f"menu_{menu_id}_submenu_{submenu_id}_dish",
             self.repository.get_dishes_list,
             submenu_id,
         )
 
     async def get(self, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4) -> Dishes:
         return await self.cache.fetch(
-            f'menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}',
+            f"menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}",
             self.repository.get_dish,
             submenu_id,
             dish_id,
@@ -36,7 +36,7 @@ class DishesService:
     ) -> Dishes:
         menu = await self.repository.create_dish(submenu_id, schema)
         background_tasks.add_task(
-            self.cache.invalidate, f'menu_{menu_id}_submenu_{submenu_id}_dish'
+            self.cache.invalidate, f"menu_{menu_id}_submenu_{submenu_id}_dish"
         )
         return menu
 
@@ -51,8 +51,8 @@ class DishesService:
         item = await self.repository.update_dish(submenu_id, dish_id, schema)
         background_tasks.add_task(
             self.cache.invalidate,
-            f'menu_{menu_id}_submenu_{submenu_id}_dish',
-            f'menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}',
+            f"menu_{menu_id}_submenu_{submenu_id}_dish",
+            f"menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}",
         )
         return item
 
@@ -66,6 +66,6 @@ class DishesService:
         await self.repository.delete_dish(submenu_id, dish_id)
         background_tasks.add_task(
             self.cache.invalidate,
-            f'menu_{menu_id}_submenu_{submenu_id}_dish',
-            f'menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}*',
+            f"menu_{menu_id}_submenu_{submenu_id}_dish",
+            f"menu_{menu_id}_submenu_{submenu_id}_dish_{dish_id}*",
         )

@@ -20,7 +20,6 @@ class Submenu(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String)
     description = Column(String)
-    dishes_count = Column(Integer)
 
     menu_id = Column(UUID(as_uuid=True),
                      ForeignKey('menu.id', ondelete='CASCADE'))

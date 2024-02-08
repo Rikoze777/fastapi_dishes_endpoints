@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
@@ -7,124 +7,92 @@ from app.schemas import schemas
 from app.services.dish import DishesService
 
 router = APIRouter(
-    tags=['dishes'],
-    prefix='/api/v1/menus/{menu_id}/submenus/{submenu_id}',
+    tags=["dishes"],
+    prefix="/api/v1/menus/{menu_id}/submenus/{submenu_id}",
 )
 
 
 @router.get(
-    '/dishes',
+    "/dishes",
     response_model=list[schemas.Dishes],
-    responses={404: {'model': schemas.NotFoundError}},
-    name='Список блюд',
+    responses={404: {"model": schemas.NotFoundError}},
+    name="Список блюд",
 )
-def get_dishes_list(submenu_id: UUID4,
-                    dishes: DishesService = Depends()) -> list[schemas.Dishes]:
-    """
-    A function to get a list of dishes based on the submenu ID.
-
-    Parameters:
-        submenu_id (UUID4): The ID of the submenu for which the list of dishes is requested.
-        dishes (DishesService, optional): An instance of DishesService, defaults to None.
-
-    Returns:
-        list[schemas.Dishes]: A list of dishes based on the provided submenu ID.
-    """
-    return dishes.get_dishes_list(submenu_id)
+async def get_dishes_list(
+    menu_id: UUID4, submenu_id: UUID4, dishes: DishesService = Depends()
+) -> list[schemas.Dishes]:
+    return await dishes.get_dishes_list(menu_id, submenu_id)
 
 
 @router.get(
-    '/dishes/{dish_id}',
+    "/dishes/{dish_id}",
     response_model=schemas.Dishes,
-    responses={404: {'model': schemas.NotFoundError}},
-    name='Блюдо по id',
+    responses={404: {"model": schemas.NotFoundError}},
+    name="Блюдо по id",
 )
-def get_dish(submenu_id: UUID4,
-             dish_id: UUID4,
-             dishes: DishesService = Depends()) -> schemas.Dishes:
-    """
-    A function to retrieve a dish by its submenu ID and dish ID using the DishesService.
-
-    Args:
-        submenu_id (UUID4): The ID of the submenu.
-        dish_id (UUID4): The ID of the dish.
-        dishes (DishesService, optional): An instance of DishesService. Defaults to Depends().
-
-    Returns:
-        schemas.Dishes: The retrieved dish.
-    """
+async def get_dish(
+    menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4, dishes: DishesService = Depends()
+) -> schemas.Dishes:
     try:
-        dish = dishes.get_dish(submenu_id, dish_id)
+        dish = await dishes.get(menu_id, submenu_id, dish_id)
     except DishExistsException:
-        raise HTTPException(status_code=404, detail='dish not found')
+        raise HTTPException(status_code=404, detail="dish not found")
     return dish
 
 
 @router.post(
-    '/dishes',
+    "/dishes",
     response_model=schemas.Dishes,
-    name='Создать блюдо',
+    name="Создать блюдо",
     status_code=status.HTTP_201_CREATED,
 )
-def add_dish(submenu_id: UUID4,
-             data: schemas.DishesCreate,
-             dishes: DishesService = Depends()) -> schemas.Dishes:
-    """
-    A function to add a dish to the submenu.
-
-    Args:
-        submenu_id (UUID4): The ID of the submenu to add the dish to.
-        data (DishesCreate): The data for creating the dish.
-        dishes (DishesService, optional): An instance of DishesService. Defaults to None.
-
-    Returns:
-        schemas.Dishes: The created dish.
-    """
-    return dishes.create_dish(submenu_id, data)
+async def add_dish(
+    menu_id: UUID4,
+    submenu_id: UUID4,
+    data: schemas.DishesCreate,
+    background_tasks: BackgroundTasks,
+    dishes: DishesService = Depends(),
+) -> schemas.Dishes:
+    return await dishes.create(menu_id, submenu_id, data, background_tasks)
 
 
 @router.patch(
-    '/dishes/{dish_id}',
+    "/dishes/{dish_id}",
     response_model=schemas.Dishes,
-    responses={404: {'model': schemas.NotFoundError}},
-    name='Обновить блюдо',
+    responses={404: {"model": schemas.NotFoundError}},
+    name="Обновить блюдо",
 )
-def update_dish(submenu_id: UUID4,
-                dish_id: UUID4,
-                data: schemas.DishesUpdate,
-                dishes: DishesService = Depends()) -> schemas.Dishes:
-    """
-    A function to update a dish with the given submenu ID, dish ID, and data, using the DishesService.
-    It returns the updated dish as per the schemas.Dishes type.
-    """
+async def update_dish(
+    menu_id: UUID4,
+    submenu_id: UUID4,
+    dish_id: UUID4,
+    data: schemas.DishesUpdate,
+    background_tasks: BackgroundTasks,
+    dishes: DishesService = Depends(),
+) -> schemas.Dishes:
     try:
-        updated_dish = dishes.update_dish(submenu_id, dish_id, data)
+        updated_dish = await dishes.update(
+            menu_id, submenu_id, dish_id, data, background_tasks
+        )
     except DishExistsException:
-        raise HTTPException(status_code=404, detail='dish not found')
+        raise HTTPException(status_code=404, detail="dish not found")
     return updated_dish
 
 
 @router.delete(
-    '/dishes/{dish_id}',
-    responses={404: {'model': schemas.NotFoundError}},
-    name='Удалить блюдо',
+    "/dishes/{dish_id}",
+    responses={404: {"model": schemas.NotFoundError}},
+    name="Удалить блюдо",
 )
-def delete_dish(submenu_id: UUID4,
-                dish_id: UUID4,
-                dishes: DishesService = Depends()) -> JSONResponse:
-    """
-    A function to delete a dish from the database.
-
-    Args:
-        submenu_id (UUID4): The ID of the submenu to which the dish belongs.
-        dishes_id (UUID4): The ID of the dish to be deleted.
-        dishes (DishesService, optional): An instance of the DishesService class. Defaults to Depends().
-
-    Returns:
-        JSONResponse: The response indicating the status of the deletion operation.
-    """
-    dishes.delete_dish(submenu_id, dish_id)
+async def delete_dish(
+    menu_id: UUID4,
+    submenu_id: UUID4,
+    dish_id: UUID4,
+    background_tasks: BackgroundTasks,
+    dishes: DishesService = Depends(),
+) -> JSONResponse:
+    await dishes.delete(menu_id, submenu_id, dish_id, background_tasks)
     return JSONResponse(
         status_code=200,
-        content={'status': 'true', 'message': 'The dish has been deleted'}
+        content={"status": "true", "message": "The dish has been deleted"},
     )

@@ -21,24 +21,6 @@ class MenuRepository:
             if not menu:
                 raise MenuExistsException()
             result = jsonable_encoder(menu)
-            submenus_select = select(Submenu).filter(Submenu.menu_id == id)
-            sub = await db_session.execute(submenus_select)
-            submenus = sub.scalars()
-            if not submenus:
-                result['submenus_count'] = 0
-                result['dishes_count'] = 0
-            else:
-                result['submenus_count'] = len(submenus)
-                for submenu in submenus:
-                    dishes_select = select(Dishes).filter(
-                        Dishes.submenu_id == submenu.id
-                    )
-                    dish = await db_session.execute(dishes_select)
-                    dishes = dish.scalars()
-                    if not dishes:
-                        result['dishes_count'] = 0
-                    else:
-                        result['dishes_count'] = len(dishes)
             return result
 
     async def get_complex_query(self, menu_id: UUID4):

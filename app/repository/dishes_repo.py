@@ -13,7 +13,7 @@ class DishesRepository:
 
     async def get_dish(self, submenu_id: UUID4, id: UUID4) -> Dishes:
         async with self.async_session.begin() as db_session:
-            dish = await db_session.get(Dishes, (submenu_id, id))
+            dish = await db_session.get(Dishes, id)
             if not dish:
                 raise DishExistsException()
             return dish
