@@ -3,7 +3,7 @@ from pydantic import UUID4
 from sqlalchemy.future import select
 
 from app.database.db import AsyncSession as AppAsyncSession
-from app.database.models import Submenu
+from app.database.models import Dishes, Submenu
 from app.repository.exceptions import SubmenuExistsException
 from app.schemas.schemas import SubmenuCreate, SubmenuUpdate
 
@@ -20,6 +20,11 @@ class SubmenuRepositary:
             if not submenu:
                 raise SubmenuExistsException()
             result = jsonable_encoder(submenu)
+            dishes = select(Dishes).filter(Dishes.submenu_id == submenu_id).scalars()
+            if not dishes:
+                result["dishes_count"] = 0
+            else:
+                result["dishes_count"] = len(dishes)
             return result
 
     async def get_submenu_list(self, menu_id: UUID4) -> list[Submenu]:
