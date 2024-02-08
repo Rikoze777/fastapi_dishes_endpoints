@@ -1,112 +1,69 @@
 import json
 from typing import Any
 
-from fastapi import Depends
+from fastapi import BackgroundTasks, Depends
 from pydantic import UUID4
 
-from app.database.db import get_redis
+from app.cache.redis import cache_instance
+from app.database.models import Submenu
 from app.repository.submenu_repo import SubmenuRepositary
 from app.schemas import schemas
 
 
 class SubmenuService:
-    def __init__(self,
-                 repository: SubmenuRepositary = Depends()) -> None:
+    def __init__(self, repository: SubmenuRepositary = Depends()):
         self.repository = repository
-        self.cache = get_redis()
+        self.cache = cache_instance
 
-    def get_submenu(self,
-                    menu_id: UUID4,
-                    submenu_id: UUID4) -> dict[schemas.Submenu, Any]:
-        """
-        Get a submenu from the repository by menu_id and submenu_id.
+    async def get_submenu_list(self, menu_id: UUID4) -> list[Submenu]:
+        return await self.cache.fetch(
+            f'menu_{menu_id}_submenu',
+            self.repository.get_submenu_list,
+            menu_id,
+        )
 
-        Args:
-            menu_id (UUID4): The ID of the menu.
-            submenu_id (UUID4): The ID of the submenu.
+    async def get(self, menu_id: UUID4, submenu_id: UUID4) -> Submenu:
+        return await self.cache.fetch(
+            f'menu_{menu_id}_submenu_{submenu_id}',
+            self.repository.get_sub,
+            menu_id,
+            submenu_id,
+        )
 
-        Returns:
-            schemas.Submenu: The retrieved submenu.
-        """
-        submenu = self.repository.get_submenu(menu_id, submenu_id)
-        if not self.cache.get(str(submenu_id)):
-            self.cache.set(str(submenu_id), json.dumps(submenu))
-            self.cache.expire(str(submenu_id), 300)
-            return submenu
-        else:
-            return json.loads(self.cache.get(str(submenu_id)))
+    async def create(
+        self,
+        menu_id: UUID4,
+        schema: schemas.SubmenuCreate,
+        background_tasks: BackgroundTasks,
+    ) -> Submenu:
+        menu = await self.repository.create_submenu(menu_id, schema)
+        background_tasks.add_task(self.cache.invalidate, f'menu_{menu_id}_submenu')
+        return menu
 
-    def get_submenu_list(self,
-                         menu_id: UUID4) -> list[dict[schemas.Submenu, Any]]:
-        """
-        Get the list of submenus for a given menu ID.
+    async def update(
+        self,
+        menu_id: UUID4,
+        submenu_id: UUID4,
+        schema: schemas.SubmenuUpdate,
+        background_tasks: BackgroundTasks,
+    ) -> type[Submenu]:
+        item = await self.repository.update_submenu(menu_id, submenu_id, schema)
+        background_tasks.add_task(
+            self.cache.invalidate,
+            f'menu_{menu_id}_submenu',
+            f'menu_{menu_id}_submenu_{submenu_id}',
+        )
+        return item
 
-        Args:
-            menu_id (UUID4): The UUID of the menu for which to retrieve submenus.
-
-        Returns:
-            list: A list of submenus for the specified menu ID.
-        """
-        list_submenu = self.repository.get_submenu_list(menu_id)
-        if not self.cache.get('submenu'):
-            self.cache.set('submenu', json.dumps(list_submenu))
-            self.cache.expire('submenu', 300)
-            return list_submenu
-        else:
-            return json.loads(self.cache.get('submenu'))
-
-    def create_submenu(self,
-                       menu_id: UUID4,
-                       submenu: schemas.SubmenuCreate) -> dict[schemas.Submenu, Any]:
-        """
-        Create a submenu for the given menu_id using the provided submenu information.
-
-        Args:
-            menu_id (UUID4): The ID of the menu for which the submenu is being created.
-            submenu (schemas.SubmenuCreate): The information for the submenu being created.
-
-        Returns:
-            schemas.Submenu: The created submenu.
-        """
-        sub = self.repository.create_submenu(menu_id, submenu)
-        self.cache.delete('menu', 'submenu')
-        return self.repository.get_submenu(menu_id, sub.id)
-
-    def update_submenu(self,
-                       menu_id: UUID4,
-                       submenu_id: UUID4,
-                       submenu: schemas.SubmenuUpdate) -> dict[schemas.Submenu, Any]:
-        """
-        Update a submenu by menu_id and submenu_id with the given submenu data.
-
-        Args:
-            menu_id (UUID4): The UUID4 of the menu.
-            submenu_id (UUID4): The UUID4 of the submenu.
-            submenu (schemas.SubmenuUpdate): The data to update the submenu.
-
-        Returns:
-            schemas.Submenu: The updated submenu.
-        """
-        self.repository.update_submenu(menu_id,
-                                       submenu_id,
-                                       submenu)
-        self.cache.delete(str(submenu_id))
-        self.cache.delete('submenu')
-        return self.repository.get_submenu(menu_id, submenu_id)
-
-    def delete_submenu(self,
-                       menu_id: UUID4,
-                       submenu_id: UUID4) -> None:
-        """
-        Deletes a submenu from the menu.
-
-        Args:
-            menu_id (UUID4): The ID of the menu.
-            submenu_id (UUID4): The ID of the submenu.
-
-        Returns:
-            None
-        """
-        self.repository.delete_submenu(menu_id, submenu_id)
-        self.cache.delete(str(menu_id), str(submenu_id))
-        self.cache.delete('menu', 'submenu', 'dishes')
+    async def delete(
+        self,
+        menu_id: UUID4,
+        submenu_id: UUID4,
+        background_tasks: BackgroundTasks,
+    ) -> None:
+        item = await self.repository.delete_submenu(menu_id, submenu_id)
+        background_tasks.add_task(
+            self.cache.invalidate,
+            f'menu_{menu_id}_submenu',
+            f'menu_{menu_id}_submenu_{submenu_id}*',
+        )

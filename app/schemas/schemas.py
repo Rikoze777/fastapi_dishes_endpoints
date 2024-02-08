@@ -12,6 +12,17 @@ class Menu(BaseModel):
         from_attributes = True
 
 
+class MenuExtended(BaseModel):
+    id: UUID4
+    title: str
+    description: str
+    submenus_count: int
+    dishes_count: int
+
+    class Config:
+        from_attributes = True
+
+
 class MenuCreate(BaseModel):
     title: str
     description: str

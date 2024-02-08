@@ -12,6 +12,8 @@ class Config(BaseSettings):
     TESTBASE_URL: str
     REDIS_HOST: str
     REDIS_PORT: int = 6379
+    ENGINE_URL: str
+    TESTBASE_URL_ASYNC: str
 
     class Config:
         env_file = './.env'
