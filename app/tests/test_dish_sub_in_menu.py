@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from pydantic import UUID4
 
 from app.routers import dishes_router, menu_router, submenu_router
@@ -19,9 +20,9 @@ DISH_CREATE_DATA_SECOND = {
 }
 
 
-async def test_add_menu(test_client: TestClient, delete_menus: None) -> None:
+async def test_add_menu(client: AsyncClient, delete_menus: None) -> None:
     data = MENU_CREATE_DATA
-    response = await test_client.post(reverse(menu_router.add_menu), json=data)
+    response = await client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
     menu = response.json()
     assert menu["title"] == data["title"]
@@ -31,9 +32,9 @@ async def test_add_menu(test_client: TestClient, delete_menus: None) -> None:
     assert "dishes_count" in menu
 
 
-async def test_add_submenu(test_client: TestClient, menu_id: UUID4) -> None:
+async def test_add_submenu(client: AsyncClient, menu_id: UUID4) -> None:
     data = SUBMENU_CREATE_DATA
-    response = await test_client.post(
+    response = await client.post(
         reverse(submenu_router.add_submenu, menu_id=menu_id), json=data
     )
     assert response.status_code == 201
@@ -45,10 +46,10 @@ async def test_add_submenu(test_client: TestClient, menu_id: UUID4) -> None:
 
 
 async def test_add_dish_first(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
     data = DISH_CREATE_DATA
-    response = await test_client.post(
+    response = await client.post(
         reverse(dishes_router.add_dish, menu_id=menu_id, submenu_id=submenu_id),
         json=data,
     )
@@ -62,10 +63,10 @@ async def test_add_dish_first(
 
 
 async def test_add_dish_second(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
     data = DISH_CREATE_DATA_SECOND
-    response = await test_client.post(
+    response = await client.post(
         reverse(dishes_router.add_dish, menu_id=menu_id, submenu_id=submenu_id),
         json=data,
     )
@@ -78,9 +79,9 @@ async def test_add_dish_second(
     assert dish["price"] == str(round(float(data["price"]), 2))
 
 
-async def test_menu_complex_data(test_client: TestClient, menu_id: UUID4) -> None:
+async def test_menu_complex_data(client: AsyncClient, menu_id: UUID4) -> None:
     menu = MENU_CREATE_DATA
-    response = await test_client.get(reverse(menu_router.get_menu_counts, id=menu_id))
+    response = await client.get(reverse(menu_router.get_menu_counts, id=menu_id))
     assert response.status_code == 200
     result = response.json()
     assert "id" in result
@@ -90,16 +91,16 @@ async def test_menu_complex_data(test_client: TestClient, menu_id: UUID4) -> Non
     assert "dishes_count" in result
 
 
-async def test_delete_submenu(test_client, menu_id, submenu_id):
-    response = await test_client.delete(
+async def test_delete_submenu(client, menu_id, submenu_id):
+    response = await client.delete(
         reverse(submenu_router.delete_submenu, menu_id=menu_id, submenu_id=submenu_id)
     )
     assert response.status_code == 200
     assert response.json() == {"status": "true", "message": "Submenu has been deleted"}
 
 
-async def test_get_dish_after_delete(test_client, menu_id):
-    response = await test_client.get(
+async def test_get_dish_after_delete(client, menu_id):
+    response = await client.get(
         reverse(
             dishes_router.get_dish,
             menu_id=menu_id,
@@ -111,29 +112,29 @@ async def test_get_dish_after_delete(test_client, menu_id):
     assert response.json() == {"detail": "dish not found"}
 
 
-async def test_get_submenu(test_client, menu_id):
-    response = await test_client.get(
+async def test_get_submenu(client, menu_id):
+    response = await client.get(
         reverse(submenu_router.get_submenu, menu_id=menu_id, submenu_id=TEST_SUBMENU_ID)
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "submenu not found"}
 
 
-async def test_get_menu(test_client, menu_id):
-    response = await test_client.get(reverse(menu_router.get_menu, id=menu_id))
+async def test_get_menu(client, menu_id):
+    response = await client.get(reverse(menu_router.get_menu, id=menu_id))
     assert response.status_code == 200
     menu = response.json()
     assert "submenus_count" in menu
     assert "dishes_count" in menu
 
 
-async def test_delete_menu(test_client, menu_id):
-    response = await test_client.delete(reverse(menu_router.delete_menu, id=menu_id))
+async def test_delete_menu(client, menu_id):
+    response = await client.delete(reverse(menu_router.delete_menu, id=menu_id))
     assert response.status_code == 200
     assert response.json() == {"status": "true", "message": "Menu has been deleted"}
 
 
-async def test_get_menu_not_exists(test_client, delete_menus):
-    response = await test_client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
+async def test_get_menu_not_exists(client, delete_menus):
+    response = await client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
     assert response.status_code == 404
     assert response.json() == {"detail": "menu not found"}

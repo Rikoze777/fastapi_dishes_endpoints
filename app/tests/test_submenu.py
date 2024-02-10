@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from pydantic import UUID4
 
 from app.routers import menu_router, submenu_router
@@ -16,8 +17,8 @@ SUBMENU_UPDATE_DATA = {
 }
 
 
-async def test_get_empty_submenu(test_client: TestClient, delete_menus: None) -> None:
-    response = await test_client.get(
+async def test_get_empty_submenu(client: AsyncClient, delete_menus: None) -> None:
+    response = await client.get(
         reverse(submenu_router.get_submenu_list, menu_id=TEST_MENU_ID)
     )
     assert response.status_code == 200
@@ -25,10 +26,10 @@ async def test_get_empty_submenu(test_client: TestClient, delete_menus: None) ->
 
 
 async def test_add_menu(
-    test_client: TestClient, menu_id: UUID4, delete_menus: None
+    client: AsyncClient, menu_id: UUID4, delete_menus: None
 ) -> None:
     data = MENU_CREATE_DATA
-    response = await test_client.post(reverse(menu_router.add_menu), json=data)
+    response = await client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
     menu = response.json()
     assert menu["title"] == data["title"]
@@ -38,8 +39,8 @@ async def test_add_menu(
     assert "dishes_count" in menu
 
 
-async def test_get_menu_list(test_client: TestClient, menu_id: UUID4) -> None:
-    response = await test_client.get(reverse(menu_router.get_menu_list))
+async def test_get_menu_list(client: AsyncClient, menu_id: UUID4) -> None:
+    response = await client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
     assert response.json() == [
         {
@@ -52,9 +53,9 @@ async def test_get_menu_list(test_client: TestClient, menu_id: UUID4) -> None:
     ]
 
 
-async def test_add_submenu(test_client: TestClient, menu_id: UUID4) -> None:
+async def test_add_submenu(client: AsyncClient, menu_id: UUID4) -> None:
     data = SUBMENU_CREATE_DATA
-    response = await test_client.post(
+    response = await client.post(
         reverse(submenu_router.add_submenu, menu_id=menu_id), json=data
     )
     assert response.status_code == 201
@@ -66,9 +67,9 @@ async def test_add_submenu(test_client: TestClient, menu_id: UUID4) -> None:
 
 
 async def test_get_submenu_list(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
-    response = await test_client.get(
+    response = await client.get(
         reverse(submenu_router.get_submenu_list, menu_id=menu_id)
     )
     assert response.status_code == 200
@@ -83,9 +84,9 @@ async def test_get_submenu_list(
 
 
 async def test_get_submenu(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
-    response = await test_client.get(
+    response = await client.get(
         reverse(submenu_router.get_submenu, menu_id=menu_id, submenu_id=submenu_id)
     )
     assert response.status_code == 200
@@ -94,10 +95,10 @@ async def test_get_submenu(
 
 
 async def test_update_submenu(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
     data = SUBMENU_UPDATE_DATA
-    response = await test_client.patch(
+    response = await client.patch(
         reverse(submenu_router.update_submenu, menu_id=menu_id, submenu_id=submenu_id),
         json=data,
     )
@@ -109,9 +110,9 @@ async def test_update_submenu(
 
 
 async def test_get_updated_submenu(
-    test_client: TestClient, menu_id: UUID4, submenu_id: UUID4
+    client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
-    response = await test_client.get(
+    response = await client.get(
         reverse(submenu_router.get_submenu, menu_id=menu_id, submenu_id=submenu_id)
     )
     assert response.status_code == 200
@@ -119,10 +120,8 @@ async def test_get_updated_submenu(
     assert "dishes_count" in menu
 
 
-async def test_get_submenu_not_exists(
-    test_client: TestClient, delete_menus: None
-) -> None:
-    response = await test_client.get(
+async def test_get_submenu_not_exists(client: AsyncClient, delete_menus: None) -> None:
+    response = await client.get(
         reverse(
             submenu_router.get_submenu, menu_id=TEST_MENU_ID, submenu_id=TEST_SUBMENU_ID
         )
