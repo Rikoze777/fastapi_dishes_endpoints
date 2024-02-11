@@ -4,7 +4,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
-from app.database.models import Menu
 from app.repository.exceptions import MenuExistsException
 from app.schemas import schemas
 from app.services.menu import MenuService
@@ -17,12 +16,13 @@ router = APIRouter(
 
 @router.get(
     "/",
-    response_model=list[schemas.Menu],
+    response_model=list[schemas.MenuItem],
     responses={404: {"model": schemas.NotFoundError}},
     name="Список меню",
 )
-async def get_menu_list(menu: MenuService = Depends()) -> list[schemas.Menu]:
-    return await menu.get_menu_list()
+async def get_menu_list(menu: MenuService = Depends()) -> list[schemas.MenuItem]:
+    list = await menu.get_menu_list()
+    return list
 
 
 @router.post(
@@ -35,17 +35,17 @@ async def add_menu(
     data: schemas.MenuCreate,
     background_tasks: BackgroundTasks,
     menu: MenuService = Depends(),
-) -> dict[Menu, Any]:
+) -> dict[schemas.Menu, Any]:
     return await menu.create(data, background_tasks)
 
 
 @router.get(
     "/{id}/",
-    response_model=schemas.MenuExtended,
+    response_model=schemas.Menu,
     responses={404: {"model": schemas.NotFoundError}},
     name="Меню по id",
 )
-async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[Menu, Any]:
+async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[schemas.Menu, Any]:
     try:
         return_menu = await menu.get_complex_query(id)
     except MenuExistsException:
@@ -64,7 +64,7 @@ async def update_menu(
     data: schemas.MenuUpdate,
     background_tasks: BackgroundTasks,
     menu: MenuService = Depends(),
-) -> dict[Menu, Any]:
+) -> dict[schemas.Menu, Any]:
     try:
         up_menu = await menu.update(id, data, background_tasks)
     except MenuExistsException:
@@ -93,3 +93,12 @@ async def delete_menu(
 )
 async def get_menu_counts(id: UUID4, menu: MenuService = Depends()) -> dict[str, Any]:
     return await menu.get_complex_query(id)
+
+
+@router.get(
+    "/all",
+    responses={404: {"model": schemas.NotFoundError}},
+    name="Вывести все меню",
+)
+async def get_all_menus(menu: MenuService = Depends()):
+    return await menu.get_all_menus()

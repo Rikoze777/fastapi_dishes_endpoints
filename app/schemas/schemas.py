@@ -5,17 +5,17 @@ class Menu(BaseModel):
     id: UUID4
     title: str
     description: str
+    submenus_count: int = 0
+    dishes_count: int = 0
 
     class Config:
         from_attributes = True
 
 
-class MenuExtended(BaseModel):
+class MenuItem(BaseModel):
     id: UUID4
     title: str
     description: str
-    submenus_count: int
-    dishes_count: int
 
     class Config:
         from_attributes = True
@@ -35,6 +35,7 @@ class Submenu(BaseModel):
     id: UUID4
     title: str
     description: str
+    dishes_count: int = 0
 
     class Config:
         from_attributes = True

@@ -4,7 +4,7 @@ from pydantic import UUID4
 from app.cache.redis import cache_instance
 from app.repository.exceptions import MenuExistsException
 from app.repository.menu_repo import MenuRepository
-from app.schemas.schemas import Menu, MenuCreate, MenuExtended, MenuUpdate
+from app.schemas.schemas import Menu, MenuCreate, MenuUpdate
 
 
 class MenuService:
@@ -50,12 +50,12 @@ class MenuService:
         item = await self.repository.delete(menu_id)
         background_tasks.add_task(self.cache.invalidate, "menu", f"menu_{menu_id}*")
 
-    async def count(self, menu_id: UUID4) -> MenuExtended:
+    async def count(self, menu_id: UUID4) -> Menu:
         return await self.cache.fetch(
             f"menu_{menu_id}_count", self.get_complex_query, menu_id
         )
 
-    async def get_complex_query(self, menu_id: UUID4) -> MenuExtended:
+    async def get_complex_query(self, menu_id: UUID4) -> Menu:
         result = await self.repository.get_complex_query(menu_id)
         try:
             menu, submenu_count, dishes_count = result
@@ -69,3 +69,7 @@ class MenuService:
             "dishes_count": dishes_count,
         }
         return menu_dict
+
+    async def get_all_menus(self):
+        all_menus = await self.repository.get_all_menus()
+        return all_menus

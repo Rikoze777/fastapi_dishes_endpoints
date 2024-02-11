@@ -1,0 +1,4 @@
+from app.tasks.excel_utils import read_and_parse
+
+
+filepath = "admin/menu.xlsx"

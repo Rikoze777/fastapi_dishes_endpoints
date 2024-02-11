@@ -1,7 +1,6 @@
 from httpx import AsyncClient
 from pydantic import UUID4
 import pytest
-
 from app.routers import menu_router
 from app.tests.utils import reverse
 
@@ -13,13 +12,15 @@ MENU_UPDATE_DATA = {
 }
 
 
-async def test_get_empty_menu(client: AsyncClient, delete_menus: None) -> None:
+@pytest.mark.asyncio
+async def test_get_empty_menu(client: AsyncClient) -> None:
     response = await client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
     assert response.json() == []
 
 
-async def test_add_menu(client: AsyncClient, delete_menus: None) -> None:
+@pytest.mark.asyncio
+async def test_add_menu(client: AsyncClient) -> None:
     data = MENU_CREATE_DATA
     response = await client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
@@ -66,6 +67,7 @@ async def test_update_menu(client: AsyncClient, menu_id: UUID4) -> None:
     assert "dishes_count" in menu
 
 
+@pytest.mark.asyncio
 async def test_get_update_menu_list(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
@@ -80,12 +82,14 @@ async def test_get_update_menu_list(client: AsyncClient, menu_id: UUID4) -> None
     ]
 
 
+@pytest.mark.asyncio
 async def test_delete_menu(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.delete(reverse(menu_router.delete_menu, id=menu_id))
     assert response.status_code == 200
     assert response.json() == {"status": "true", "message": "Menu has been deleted"}
 
 
+@pytest.mark.asyncio
 async def test_get_menu_not_exists(client: AsyncClient, delete_menus: None) -> None:
     response = await client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
     assert response.status_code == 404

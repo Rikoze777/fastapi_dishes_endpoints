@@ -1,11 +1,9 @@
 import logging
 from collections.abc import AsyncIterator
 from typing import Annotated
-
-import redis
 from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.config import Config
