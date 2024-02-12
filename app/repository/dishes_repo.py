@@ -1,4 +1,5 @@
 from pydantic import UUID4
+from sqlalchemy import delete
 from sqlalchemy.future import select
 
 from app.database.db import AsyncSession as AppAsyncSession
@@ -62,6 +63,6 @@ class DishesRepository:
 
     async def delete_dish(self, submenu_id: UUID4, dish_id: UUID4) -> None:
         async with self.async_session.begin() as db_session:
-            query = db_session.execute(select(Dishes).where(Dishes.id == dish_id))
-            db_session.delete(query)
+            query = delete(Dishes).where(Dishes.id == dish_id)
+            await db_session.execute(query)
             await db_session.commit()

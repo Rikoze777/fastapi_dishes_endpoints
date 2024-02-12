@@ -23,7 +23,7 @@ router = APIRouter(
 )
 async def get_submenu_list(
     menu_id: UUID4, submenu: SubmenuService = Depends()
-) -> list[dict[Submenu, Any]]:
+) -> list[Submenu]:
     return await submenu.get_submenu_list(menu_id)
 
 
@@ -70,7 +70,7 @@ async def update_submenu(
     data: schemas.SubmenuUpdate,
     background_tasks: BackgroundTasks,
     submenu: SubmenuService = Depends(),
-) -> dict[Submenu, Any]:
+) -> type[Submenu]:
     try:
         await submenu.get(menu_id, submenu_id)
     except SubmenuExistsException:

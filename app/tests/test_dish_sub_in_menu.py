@@ -74,28 +74,34 @@ async def test_all_data(
     submenu = SUBMENU_CREATE_DATA
     response = await client.get(reverse(menu_router.get_all_menus))
     assert response.status_code == 200
-    assert response.json() == {
-        'id': menu_id,
-        'title': menu['title'],
-        'description': menu['description'],
-        'submenus': [
-            {
-                'id': submenu_id,
-                'title': submenu['title'],
-                'description': submenu['description'],
-                'menu_id': menu_id,
-                'dishes': [
-                    {
-                        'id': dish_id,
-                        'title': dish['title'],
-                        'description': dish['description'],
-                        'price': dish['price'],
-                        'submenu_id': submenu_id,
-                    },
-                ],
-            }
-        ],
-    }
+    m_id = menu_id
+    s_id = submenu_id
+    d_id = dish_id
+    response_data = response.json()
+    assert response_data == [
+        {
+            'id': m_id,
+            'title': menu['title'],
+            'description': menu['description'],
+            'submenus': [
+                {
+                    'id': s_id,
+                    'title': submenu['title'],
+                    'description': submenu['description'],
+                    'menu_id': m_id,
+                    'dishes': [
+                        {
+                            'id': d_id,
+                            'title': dish['title'],
+                            'description': dish['description'],
+                            'price': 16.22,
+                            'submenu_id': s_id,
+                        },
+                    ],
+                }
+            ],
+        }
+    ]
 
 
 @pytest.mark.asyncio

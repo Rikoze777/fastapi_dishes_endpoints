@@ -79,7 +79,7 @@ services:
       - .env
     volumes:
       - ./:/app
-    command: celery -A app.celery.tasks worker --loglevel=DEBUG
+    command: celery -A app.celery.tasks worker
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -95,7 +95,7 @@ services:
       - .env
     volumes:
       - ./:/app
-    command: celery -A app.celery.tasks beat --loglevel=DEBUG
+    command: celery -A app.celery.tasks beat
     depends_on:
       dishes-app-db:
         condition: service_healthy

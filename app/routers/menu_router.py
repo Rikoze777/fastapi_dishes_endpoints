@@ -4,6 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
+from app.database.models import Menu
 from app.repository.exceptions import MenuExistsException
 from app.schemas import schemas
 from app.services.menu import MenuService
@@ -45,7 +46,7 @@ async def add_menu(
     responses={404: {'model': schemas.NotFoundError}},
     name='Меню по id',
 )
-async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[schemas.Menu, Any]:
+async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[str, Any]:
     try:
         return_menu = await menu.get_complex_query(id)
     except MenuExistsException:
@@ -64,7 +65,7 @@ async def update_menu(
     data: schemas.MenuUpdate,
     background_tasks: BackgroundTasks,
     menu: MenuService = Depends(),
-) -> dict[schemas.Menu, Any]:
+) -> type[Menu]:
     try:
         up_menu = await menu.update(id, data, background_tasks)
     except MenuExistsException:

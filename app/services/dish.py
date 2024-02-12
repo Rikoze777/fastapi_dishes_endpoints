@@ -1,5 +1,4 @@
 from fastapi import BackgroundTasks, Depends
-from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
 
 from app.cache.redis import cache_instance

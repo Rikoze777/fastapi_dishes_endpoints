@@ -2,6 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import UUID4
 
+from app.database.models import Dishes
 from app.repository.exceptions import DishExistsException
 from app.schemas import schemas
 from app.services.dish import DishesService
@@ -73,7 +74,7 @@ async def update_dish(
     data: schemas.DishesUpdate,
     background_tasks: BackgroundTasks,
     dishes: DishesService = Depends(),
-) -> schemas.Dishes:
+) -> type[Dishes]:
     try:
         updated_dish = await dishes.update(
             menu_id, submenu_id, dish_id, data, background_tasks

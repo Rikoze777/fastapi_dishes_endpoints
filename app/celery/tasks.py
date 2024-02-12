@@ -1,11 +1,10 @@
 import hashlib
 import json
-import os
 from datetime import timedelta
+from operator import mul
 from pathlib import Path
 from typing import Any
 
-import gspread
 import pandas as pd
 from celery import Celery
 from openpyxl import load_workbook
@@ -113,9 +112,11 @@ def excel_to_json(
 
 def run_update_database(data: list) -> None:
     menus_data, submenus_data, dishes_data = excel_to_json(data)
-    menus_data['price'] = menus_data['price'] * menus_data['discount'] / 100
-    submenus_data['price'] = submenus_data['price'] * submenus_data['discount'] / 100
-    dishes_data['price'] = dishes_data['price'] * dishes_data['discount'] / 100
+    menus_data['price'] = mul(menus_data['price'], menus_data['discount']) / 100
+    submenus_data['price'] = (
+        mul(submenus_data['price'], submenus_data['discount']) / 100
+    )
+    dishes_data['price'] = mul(dishes_data['price'], dishes_data['discount']) / 100
     dish_df = pd.read_json(json.dumps(dishes_data))
     dish_df.to_sql(
         'dishes',

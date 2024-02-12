@@ -1,5 +1,4 @@
 import pytest
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import UUID4
 

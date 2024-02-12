@@ -3,7 +3,7 @@ from pydantic import UUID4
 from sqlalchemy.future import select
 
 from app.database.db import AsyncSession as AppAsyncSession
-from app.database.models import Dishes, Submenu
+from app.database.models import Submenu
 from app.repository.exceptions import SubmenuExistsException
 from app.schemas.schemas import SubmenuCreate, SubmenuUpdate
 

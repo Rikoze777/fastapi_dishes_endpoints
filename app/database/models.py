@@ -14,7 +14,7 @@ class Menu(Base):
     title = Column(String)
     description = Column(String)
 
-    submenus = relationship('Submenu', back_populates='menus', lazy='selectin')
+    submenus = relationship('Submenu', backref='menus', lazy='selectin', passive_deletes=True)
 
 
 class Submenu(Base):
@@ -25,9 +25,7 @@ class Submenu(Base):
     description = Column(String)
 
     menu_id = Column(UUID(as_uuid=True), ForeignKey('menu.id', ondelete='CASCADE'))
-
-    menus = relationship('Menu', back_populates='submenus', lazy='selectin')
-    dishes = relationship('Dishes', back_populates='submenus', lazy='selectin')
+    dishes = relationship('Dishes', backref='submenus', lazy='selectin', passive_deletes=True)
 
 
 class Dishes(Base):
@@ -41,4 +39,3 @@ class Dishes(Base):
     submenu_id = Column(
         UUID(as_uuid=True), ForeignKey('submenu.id', ondelete='CASCADE')
     )
-    submenus = relationship('Submenu', back_populates='dishes', lazy='selectin')

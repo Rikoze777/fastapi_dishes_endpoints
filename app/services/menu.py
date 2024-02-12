@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import BackgroundTasks, Depends
 from pydantic import UUID4
 
@@ -55,7 +57,7 @@ class MenuService:
             f'menu_{menu_id}_count', self.get_complex_query, menu_id
         )
 
-    async def get_complex_query(self, menu_id: UUID4) -> Menu:
+    async def get_complex_query(self, menu_id: UUID4) -> dict[str, Any]:
         try:
             result = await self.repository.get_menu(menu_id)
         except TypeError:
