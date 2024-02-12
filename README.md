@@ -5,9 +5,19 @@
 ## Задание 2 недели по сложному ORM запросу.
 3.* Реализовать вывод количества подменю и блюд для Меню через один (сложный) ORM запрос.
 
-Данный запрос выполнен в файле [menu_crud.py](app/crud/menu_crud.py), в функции `get_complex_query`
+Данный запрос выполнен в файле [menu_repo.py](app/repository/menu_repo.py), в функции `get_complex_query`
 
 Тест на эндпоинт получения количества подменю и блюд в [test_dish_sub_in_menu.py](app/tests/test_dish_sub_in_menu.py), в `test_menu_complex_data`
+
+## Задание 4 недели по сложному ORM запросу.
+
+3.Добавить эндпоинт (GET) для вывода всех меню со всеми связанными подменю и со всеми связанными блюдами.
+Данный запрос выполнен в файле [menu_repo.py](app/repository/menu_repo.py), в функции `get_all_menus`
+
+5. *Обновление меню из excel раз в 15 сек.
+Выполнен в файле [tasks.py](app/celery/tasks.py)
+6. **Блюда по акции. Размер скидки (%) указывается в столбце G файла Menu.xlsx
+Выполнен в файле [tasks.py](app/celery/tasks.py)
 
 ## Настройки
 
