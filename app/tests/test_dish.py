@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from pydantic import UUID4
+import pytest
 
 from app.routers import dishes_router, menu_router, submenu_router
 from app.tests.test_menu import MENU_CREATE_DATA, TEST_MENU_ID
@@ -20,6 +21,7 @@ DISH_UPATE_DATA = {
 }
 
 
+@pytest.mark.asyncio
 async def test_add_menu(client: AsyncClient, delete_menus: None) -> None:
     data = MENU_CREATE_DATA
     response = await client.post(reverse(menu_router.add_menu), json=data)
@@ -32,6 +34,7 @@ async def test_add_menu(client: AsyncClient, delete_menus: None) -> None:
     assert "dishes_count" in menu
 
 
+@pytest.mark.asyncio
 async def test_add_submenu(client: AsyncClient, menu_id: UUID4) -> None:
     data = SUBMENU_CREATE_DATA
     response = await client.post(
@@ -45,6 +48,7 @@ async def test_add_submenu(client: AsyncClient, menu_id: UUID4) -> None:
     assert "dishes_count" in menu
 
 
+@pytest.mark.asyncio
 async def test_add_dish(client: AsyncClient, menu_id: UUID4, submenu_id: UUID4) -> None:
     data = DISH_CREATE_DATA
     response = await client.post(
@@ -60,6 +64,7 @@ async def test_add_dish(client: AsyncClient, menu_id: UUID4, submenu_id: UUID4) 
     assert dish["price"] == str(round(float(data["price"]), 2))
 
 
+@pytest.mark.asyncio
 async def test_get_dish_list(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4
 ) -> None:
@@ -77,6 +82,7 @@ async def test_get_dish_list(
     ]
 
 
+@pytest.mark.asyncio
 async def test_get_dish(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4
 ) -> None:
@@ -93,6 +99,7 @@ async def test_get_dish(
     assert "price" in dish
 
 
+@pytest.mark.asyncio
 async def test_update_dish(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4
 ) -> None:
@@ -114,6 +121,7 @@ async def test_update_dish(
     assert dish["price"] == str(round(float(data["price"]), 2))
 
 
+@pytest.mark.asyncio
 async def test_get_update_dish(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4
 ) -> None:
@@ -130,6 +138,7 @@ async def test_get_update_dish(
     assert "price" in dish
 
 
+@pytest.mark.asyncio
 async def test_delete_dish(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4, dish_id: UUID4
 ) -> None:
@@ -145,6 +154,7 @@ async def test_delete_dish(
     assert response.json() == {"status": "true", "message": "The dish has been deleted"}
 
 
+@pytest.mark.asyncio
 async def test_get_empty_dish(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
@@ -155,6 +165,7 @@ async def test_get_empty_dish(
     assert response.json() == []
 
 
+@pytest.mark.asyncio
 async def test_get_dish_after_delete(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
@@ -170,6 +181,7 @@ async def test_get_dish_after_delete(
     assert response.json() == {"detail": "dish not found"}
 
 
+@pytest.mark.asyncio
 async def test_delete_submenu(
     client: AsyncClient, menu_id: UUID4, submenu_id: UUID4
 ) -> None:
@@ -180,6 +192,7 @@ async def test_delete_submenu(
     assert response.json() == {"status": "true", "message": "Submenu has been deleted"}
 
 
+@pytest.mark.asyncio
 async def test_get_submenu_after_delete(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.get(
         reverse(submenu_router.get_submenu, menu_id=menu_id, submenu_id=TEST_SUBMENU_ID)
@@ -188,12 +201,14 @@ async def test_get_submenu_after_delete(client: AsyncClient, menu_id: UUID4) -> 
     assert response.json() == {"detail": "submenu not found"}
 
 
+@pytest.mark.asyncio
 async def test_delete_menu(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.delete(reverse(menu_router.delete_menu, id=menu_id))
     assert response.status_code == 200
     assert response.json() == {"status": "true", "message": "Menu has been deleted"}
 
 
+@pytest.mark.asyncio
 async def test_get_menu_after_delete(client: AsyncClient) -> None:
     response = await client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
     assert response.status_code == 404

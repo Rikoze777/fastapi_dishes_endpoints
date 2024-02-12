@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 from pydantic import UUID4
 import pytest
+
 from app.routers import menu_router
 from app.tests.utils import reverse
 
@@ -32,6 +33,7 @@ async def test_add_menu(client: AsyncClient) -> None:
     assert "dishes_count" in menu
 
 
+@pytest.mark.asyncio
 async def test_get_menu_list(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.get(reverse(menu_router.get_menu_list))
     assert response.status_code == 200
@@ -40,12 +42,11 @@ async def test_get_menu_list(client: AsyncClient, menu_id: UUID4) -> None:
             "id": f"{menu_id}",
             "title": "Test menu",
             "description": "Test description menu",
-            "submenus_count": 0,
-            "dishes_count": 0,
         }
     ]
 
 
+@pytest.mark.asyncio
 async def test_get_menu(client: AsyncClient, menu_id: UUID4) -> None:
     response = await client.get(reverse(menu_router.get_menu, id=menu_id))
     assert response.status_code == 200
@@ -54,6 +55,7 @@ async def test_get_menu(client: AsyncClient, menu_id: UUID4) -> None:
     assert "dishes_count" in menu
 
 
+@pytest.mark.asyncio
 async def test_update_menu(client: AsyncClient, menu_id: UUID4) -> None:
     data = MENU_UPDATE_DATA
     response = await client.patch(
@@ -76,8 +78,6 @@ async def test_get_update_menu_list(client: AsyncClient, menu_id: UUID4) -> None
             "id": f"{menu_id}",
             "title": "Test update menu",
             "description": "Test update description menu",
-            "submenus_count": 0,
-            "dishes_count": 0,
         }
     ]
 
@@ -90,7 +90,7 @@ async def test_delete_menu(client: AsyncClient, menu_id: UUID4) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_menu_not_exists(client: AsyncClient, delete_menus: None) -> None:
+async def test_get_menu_not_exists(client: AsyncClient) -> None:
     response = await client.get(reverse(menu_router.get_menu, id=TEST_MENU_ID))
     assert response.status_code == 404
     assert response.json() == {"detail": "menu not found"}

@@ -1,4 +1,5 @@
 from fastapi import BackgroundTasks, Depends
+from fastapi.encoders import jsonable_encoder
 from pydantic import UUID4
 
 from app.cache.redis import cache_instance
@@ -47,8 +48,9 @@ class DishesService:
         dish_id: UUID4,
         schema: schemas.DishesUpdate,
         background_tasks: BackgroundTasks,
-    ) -> type[Dishes]:
+    ) -> type[schemas.Dishes]:
         item = await self.repository.update_dish(submenu_id, dish_id, schema)
+        item.price = f"{float(item.price):.2f}"
         background_tasks.add_task(
             self.cache.invalidate,
             f"menu_{menu_id}_submenu_{submenu_id}_dish",

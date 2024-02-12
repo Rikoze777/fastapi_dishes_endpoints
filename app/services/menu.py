@@ -56,17 +56,16 @@ class MenuService:
         )
 
     async def get_complex_query(self, menu_id: UUID4) -> Menu:
-        result = await self.repository.get_complex_query(menu_id)
         try:
-            menu, submenu_count, dishes_count = result
+            result = await self.repository.get_menu(menu_id)
         except TypeError:
             raise MenuExistsException()
         menu_dict = {
-            "id": menu.id,
-            "title": menu.title,
-            "description": menu.description,
-            "submenus_count": submenu_count,
-            "dishes_count": dishes_count,
+            "id": result.id,
+            "title": result.title,
+            "description": result.description,
+            "submenus_count": result.submenus_count,
+            "dishes_count": result.dishes_count,
         }
         return menu_dict
 

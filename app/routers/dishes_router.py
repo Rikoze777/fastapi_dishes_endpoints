@@ -21,7 +21,9 @@ router = APIRouter(
 async def get_dishes_list(
     menu_id: UUID4, submenu_id: UUID4, dishes: DishesService = Depends()
 ) -> list[schemas.Dishes]:
-    return await dishes.get_dishes_list(menu_id, submenu_id)
+    dishes_list = await dishes.get_dishes_list(menu_id, submenu_id)
+
+    return dishes_list
 
 
 @router.get(
@@ -53,7 +55,9 @@ async def add_dish(
     background_tasks: BackgroundTasks,
     dishes: DishesService = Depends(),
 ) -> schemas.Dishes:
-    return await dishes.create(menu_id, submenu_id, data, background_tasks)
+    dish = await dishes.create(menu_id, submenu_id, data, background_tasks)
+    dish.price = f"{float(dish.price):.2f}"
+    return dish
 
 
 @router.patch(

@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from app.database.db import AsyncSession as AppAsyncSession
 from app.database.models import Dishes
 from app.repository.exceptions import DishExistsException
-from app.schemas.schemas import DishesCreate, DishesUpdate
+from app.schemas.schemas import DishesCreate, DishesUpdate, Dishes as DishesModel
 
 
 class DishesRepository:
@@ -13,9 +13,12 @@ class DishesRepository:
 
     async def get_dish(self, submenu_id: UUID4, id: UUID4) -> Dishes:
         async with self.async_session.begin() as db_session:
-            dish = await db_session.get(Dishes, id)
+            stmt = select(Dishes).where(Dishes.id == id)
+            dish = await db_session.execute(stmt)
+            dish = dish.scalars().first()
             if not dish:
                 raise DishExistsException()
+            dish = DishesModel.model_validate(dish)
             return dish
 
     async def create_dish(self, submenu_id: UUID4, dish: DishesCreate) -> Dishes:
@@ -25,19 +28,24 @@ class DishesRepository:
         async with self.async_session.begin() as db_session:
             db_session.add(new_dish)
             await db_session.commit()
-            return new_dish
+        return DishesModel.model_validate(new_dish)
 
     async def update_dish(
         self, submenu_id: UUID4, id: UUID4, update_dish: DishesUpdate
-    ) -> Dishes:
-        db_dish = await self.get_dish(submenu_id, id)
-        db_dish.title = update_dish.title
-        db_dish.description = update_dish.description
-        db_dish.price = update_dish.price
+    ) -> DishesModel:
         async with self.async_session.begin() as db_session:
-            db_session.add(db_dish)
-            await db_session.commit()
-            return db_dish
+            stmt = select(Dishes).where(Dishes.id == id)
+            dish = await db_session.execute(stmt)
+            dish = dish.scalars().first()
+            if not dish:
+                raise DishExistsException()
+            dish.title = update_dish.title
+            dish.description = update_dish.description
+            dish.price = f"{float(update_dish.price):.2f}"
+            await db_session.flush()
+            await db_session.refresh(dish)
+            dish = DishesModel.model_validate(dish)
+            return dish
 
     async def get_dishes_list(self, submenu_id: UUID4) -> list[Dishes]:
         async with self.async_session.begin() as db_session:
@@ -46,11 +54,13 @@ class DishesRepository:
             dishes = result.scalars().all()
             if not dishes:
                 return []
-            else:
-                return dishes
+            dishes_list = list(map(DishesModel.model_validate, dishes))
+            for dish in dishes_list:
+                dish.price = f"{float(dish.price):.2f}"
+            return dishes_list
 
     async def delete_dish(self, submenu_id: UUID4, dish_id: UUID4) -> None:
-        db_dish = await self.get_dish(submenu_id, dish_id)
         async with self.async_session.begin() as db_session:
-            db_session.delete(db_dish)
+            db_dish = await db_session.get(Dishes, dish_id)
+            await db_session.delete(db_dish)
             await db_session.commit()

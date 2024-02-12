@@ -1,11 +1,10 @@
-import asyncio
 from httpx import AsyncClient
 import pytest
-import pytest_asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, AsyncIterator
 from pydantic import UUID4
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from app.cache.redis import cache_instance
 from app.config import Config
 from app.database.db import Base, get_session
 from app.main import app
@@ -16,8 +15,7 @@ target_db = config.POSTGRES_DB_TEST
 testbase_url = config.TESTBASE_URL_ASYNC
 postgres_connection_url = config.TESTBASE_URL
 
-
-test_engine = create_async_engine(url=testbase_url, poolclass=NullPool)
+test_engine = create_async_engine(url=testbase_url, poolclass=NullPool, echo=True)
 test_session_maker = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
@@ -28,20 +26,21 @@ test_session_maker = async_sessionmaker(
 Base.metadata.bind = test_engine
 
 
-async def override_scoped_session() -> AsyncGenerator[AsyncSession, None]:
-    session = test_session_maker()
-    async with session as sess:
-        yield sess
+async def override_scoped_session() -> AsyncIterator[async_sessionmaker]:
+    yield test_session_maker
 
 
 app.dependency_overrides[get_session] = override_scoped_session
 
 
-@pytest.fixture(scope="session")
-async def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+@pytest.fixture
+def anyio_backend() -> str:
+    return "asyncio"
+
+
+@pytest.fixture
+def prepare_cache():
+    cache_instance.redis_client.flushall()
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -82,7 +81,7 @@ async def submenu_id(client: AsyncClient, menu_id: UUID4) -> UUID4:
 
 @pytest.fixture
 async def dish_id(client: AsyncClient, menu_id: UUID4, submenu_id: UUID4) -> UUID4:
-    dishes_url = f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes/"
+    dishes_url = f"/api/v1/menus/{menu_id}/submenus/{submenu_id}/dishes"
     response = await client.get(dishes_url)
     for dish in response.json():
         return dish["id"]

@@ -1,7 +1,8 @@
-import os
 import pandas as pd
+from app.config import Config
 
-filepath = os.path.join(os.getcwd(), "admin/Menu.xlsx")
+config = Config()
+filepath = config.EXCEL_DOC_PATH
 print(filepath)
 
 
@@ -48,7 +49,18 @@ def parse_excel(frame):
     return menu_data, submenu_data, dish_data
 
 
-def read_and_parse(filepath):
-    frame = pd.read_excel(filepath, header=None)
+def read_and_parse(path):
+    frame = pd.read_excel(path, header=None)
     menus, submenus, dishes = parse_excel(frame)
     return menus, submenus, dishes
+
+
+def main():
+    menus, submenus, dishes = read_and_parse(filepath)
+    print(menus)
+    print(submenus)
+    print(dishes)
+
+
+if "__name__" == "__main__":
+    main()
