@@ -9,16 +9,16 @@ from app.schemas import schemas
 from app.services.menu import MenuService
 
 router = APIRouter(
-    tags=["menu"],
-    prefix="/api/v1/menus",
+    tags=['menu'],
+    prefix='/api/v1/menus',
 )
 
 
 @router.get(
-    "/",
+    '/',
     response_model=list[schemas.MenuItem],
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Список меню",
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Список меню',
 )
 async def get_menu_list(menu: MenuService = Depends()) -> list[schemas.MenuItem]:
     list = await menu.get_menu_list()
@@ -26,9 +26,9 @@ async def get_menu_list(menu: MenuService = Depends()) -> list[schemas.MenuItem]
 
 
 @router.post(
-    "/",
+    '/',
     response_model=schemas.Menu,
-    name="Создать меню",
+    name='Создать меню',
     status_code=status.HTTP_201_CREATED,
 )
 async def add_menu(
@@ -40,24 +40,24 @@ async def add_menu(
 
 
 @router.get(
-    "/{id}/",
+    '/{id}/',
     response_model=schemas.Menu,
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Меню по id",
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Меню по id',
 )
 async def get_menu(id: UUID4, menu: MenuService = Depends()) -> dict[schemas.Menu, Any]:
     try:
         return_menu = await menu.get_complex_query(id)
     except MenuExistsException:
-        raise HTTPException(status_code=404, detail="menu not found")
+        raise HTTPException(status_code=404, detail='menu not found')
     return return_menu
 
 
 @router.patch(
-    "/{id}/",
+    '/{id}/',
     response_model=schemas.Menu,
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Обновить меню",
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Обновить меню',
 )
 async def update_menu(
     id: UUID4,
@@ -68,37 +68,37 @@ async def update_menu(
     try:
         up_menu = await menu.update(id, data, background_tasks)
     except MenuExistsException:
-        raise HTTPException(status_code=404, detail="menu not found")
+        raise HTTPException(status_code=404, detail='menu not found')
     return up_menu
 
 
 @router.delete(
-    "/{id}/",
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Удалить меню",
+    '/{id}/',
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Удалить меню',
 )
 async def delete_menu(
     id: UUID4, background_tasks: BackgroundTasks, menu: MenuService = Depends()
 ) -> JSONResponse:
     await menu.delete(id, background_tasks)
     return JSONResponse(
-        status_code=200, content={"status": "true", "message": "Menu has been deleted"}
+        status_code=200, content={'status': 'true', 'message': 'Menu has been deleted'}
     )
 
 
 @router.get(
-    "/{id}/count",
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Посчитать подменю и блюда",
+    '/{id}/count',
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Посчитать подменю и блюда',
 )
 async def get_menu_counts(id: UUID4, menu: MenuService = Depends()) -> dict[str, Any]:
     return await menu.get_complex_query(id)
 
 
 @router.get(
-    "/all",
-    responses={404: {"model": schemas.NotFoundError}},
-    name="Вывести все меню",
+    '/all',
+    responses={404: {'model': schemas.NotFoundError}},
+    name='Вывести все меню',
 )
 async def get_all_menus(menu: MenuService = Depends()):
     return await menu.get_all_menus()

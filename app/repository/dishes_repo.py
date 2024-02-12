@@ -4,7 +4,8 @@ from sqlalchemy.future import select
 from app.database.db import AsyncSession as AppAsyncSession
 from app.database.models import Dishes
 from app.repository.exceptions import DishExistsException
-from app.schemas.schemas import DishesCreate, DishesUpdate, Dishes as DishesModel
+from app.schemas.schemas import Dishes as DishesModel
+from app.schemas.schemas import DishesCreate, DishesUpdate
 
 
 class DishesRepository:
@@ -41,7 +42,7 @@ class DishesRepository:
                 raise DishExistsException()
             dish.title = update_dish.title
             dish.description = update_dish.description
-            dish.price = f"{float(update_dish.price):.2f}"
+            dish.price = f'{float(update_dish.price):.2f}'
             await db_session.flush()
             await db_session.refresh(dish)
             dish = DishesModel.model_validate(dish)
@@ -56,11 +57,11 @@ class DishesRepository:
                 return []
             dishes_list = list(map(DishesModel.model_validate, dishes))
             for dish in dishes_list:
-                dish.price = f"{float(dish.price):.2f}"
+                dish.price = f'{float(dish.price):.2f}'
             return dishes_list
 
     async def delete_dish(self, submenu_id: UUID4, dish_id: UUID4) -> None:
         async with self.async_session.begin() as db_session:
-            db_dish = await db_session.get(Dishes, dish_id)
-            await db_session.delete(db_dish)
+            query = db_session.execute(select(Dishes).where(Dishes.id == dish_id))
+            db_session.delete(query)
             await db_session.commit()

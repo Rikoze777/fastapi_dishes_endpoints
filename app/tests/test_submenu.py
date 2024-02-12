@@ -1,19 +1,19 @@
+import pytest
 from httpx import AsyncClient
 from pydantic import UUID4
-import pytest
 
 from app.routers import menu_router, submenu_router
 from app.tests.test_menu import MENU_CREATE_DATA, TEST_MENU_ID
 from app.tests.utils import reverse
 
-TEST_SUBMENU_ID = "9ee49a1f-1ea9-4ca1-a0c9-6f20bf31196c"
+TEST_SUBMENU_ID = '9ee49a1f-1ea9-4ca1-a0c9-6f20bf31196c'
 SUBMENU_CREATE_DATA = {
-    "title": "Test submenu",
-    "description": "Test description submenu",
+    'title': 'Test submenu',
+    'description': 'Test description submenu',
 }
 SUBMENU_UPDATE_DATA = {
-    "title": "Test update submenu",
-    "description": "Test update description submenu",
+    'title': 'Test update submenu',
+    'description': 'Test update description submenu',
 }
 
 
@@ -34,11 +34,11 @@ async def test_add_menu(
     response = await client.post(reverse(menu_router.add_menu), json=data)
     assert response.status_code == 201
     menu = response.json()
-    assert menu["title"] == data["title"]
-    assert menu["description"] == data["description"]
-    assert "id" in menu
-    assert "submenus_count" in menu
-    assert "dishes_count" in menu
+    assert menu['title'] == data['title']
+    assert menu['description'] == data['description']
+    assert 'id' in menu
+    assert 'submenus_count' in menu
+    assert 'dishes_count' in menu
 
 
 @pytest.mark.asyncio
@@ -47,9 +47,9 @@ async def test_get_menu_list(client: AsyncClient, menu_id: UUID4) -> None:
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": f"{menu_id}",
-            "title": "Test menu",
-            "description": "Test description menu",
+            'id': f'{menu_id}',
+            'title': 'Test menu',
+            'description': 'Test description menu',
         }
     ]
 
@@ -62,10 +62,10 @@ async def test_add_submenu(client: AsyncClient, menu_id: UUID4) -> None:
     )
     assert response.status_code == 201
     menu = response.json()
-    assert menu["title"] == data["title"]
-    assert menu["description"] == data["description"]
-    assert "id" in menu
-    assert "dishes_count" in menu
+    assert menu['title'] == data['title']
+    assert menu['description'] == data['description']
+    assert 'id' in menu
+    assert 'dishes_count' in menu
 
 
 @pytest.mark.asyncio
@@ -78,10 +78,10 @@ async def test_get_submenu_list(
     assert response.status_code == 200
     assert response.json() == [
         {
-            "id": f"{submenu_id}",
-            "title": "Test submenu",
-            "description": "Test description submenu",
-            "dishes_count": 0,
+            'id': f'{submenu_id}',
+            'title': 'Test submenu',
+            'description': 'Test description submenu',
+            'dishes_count': 0,
         }
     ]
 
@@ -95,7 +95,7 @@ async def test_get_submenu(
     )
     assert response.status_code == 200
     menu = response.json()
-    assert "dishes_count" in menu
+    assert 'dishes_count' in menu
 
 
 @pytest.mark.asyncio
@@ -109,9 +109,9 @@ async def test_update_submenu(
     )
     assert response.status_code == 200
     menu = response.json()
-    assert menu["title"] == data["title"]
-    assert menu["description"] == data["description"]
-    assert "dishes_count" in menu
+    assert menu['title'] == data['title']
+    assert menu['description'] == data['description']
+    assert 'dishes_count' in menu
 
 
 @pytest.mark.asyncio
@@ -123,7 +123,7 @@ async def test_get_updated_submenu(
     )
     assert response.status_code == 200
     menu = response.json()
-    assert "dishes_count" in menu
+    assert 'dishes_count' in menu
 
 
 @pytest.mark.asyncio
@@ -134,4 +134,4 @@ async def test_get_submenu_not_exists(client: AsyncClient, delete_menus: None) -
         )
     )
     assert response.status_code == 404
-    assert response.json() == {"detail": "submenu not found"}
+    assert response.json() == {'detail': 'submenu not found'}

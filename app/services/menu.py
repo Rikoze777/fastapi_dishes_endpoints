@@ -14,11 +14,11 @@ class MenuService:
         self.cache = cache_instance
 
     async def get_menu_list(self):
-        return await self.cache.fetch("menu", self.repository.get_menu_list)
+        return await self.cache.fetch('menu', self.repository.get_menu_list)
 
     async def get(self, menu_id: UUID4) -> Menu:
         return await self.cache.fetch(
-            f"menu_{menu_id}",
+            f'menu_{menu_id}',
             self.repository.get_menu,
             menu_id,
         )
@@ -29,7 +29,7 @@ class MenuService:
         background_tasks: BackgroundTasks,
     ) -> Menu:
         menu = await self.repository.create_menu(menu_schema)
-        background_tasks.add_task(self.cache.invalidate, "menu")
+        background_tasks.add_task(self.cache.invalidate, 'menu')
         return menu
 
     async def update(
@@ -39,7 +39,7 @@ class MenuService:
         background_tasks: BackgroundTasks,
     ) -> type[Menu]:
         item = await self.repository.update_menu(menu_id, menu_schema)
-        background_tasks.add_task(self.cache.invalidate, "menu", f"menu_{menu_id}")
+        background_tasks.add_task(self.cache.invalidate, 'menu', f'menu_{menu_id}')
         return item
 
     async def delete(
@@ -47,12 +47,12 @@ class MenuService:
         menu_id: UUID4,
         background_tasks: BackgroundTasks,
     ) -> None:
-        item = await self.repository.delete(menu_id)
-        background_tasks.add_task(self.cache.invalidate, "menu", f"menu_{menu_id}*")
+        await self.repository.delete(menu_id)
+        background_tasks.add_task(self.cache.invalidate, 'menu', f'menu_{menu_id}*')
 
     async def count(self, menu_id: UUID4) -> Menu:
         return await self.cache.fetch(
-            f"menu_{menu_id}_count", self.get_complex_query, menu_id
+            f'menu_{menu_id}_count', self.get_complex_query, menu_id
         )
 
     async def get_complex_query(self, menu_id: UUID4) -> Menu:
@@ -61,11 +61,11 @@ class MenuService:
         except TypeError:
             raise MenuExistsException()
         menu_dict = {
-            "id": result.id,
-            "title": result.title,
-            "description": result.description,
-            "submenus_count": result.submenus_count,
-            "dishes_count": result.dishes_count,
+            'id': result.id,
+            'title': result.title,
+            'description': result.description,
+            'submenus_count': result.submenus_count,
+            'dishes_count': result.dishes_count,
         }
         return menu_dict
 

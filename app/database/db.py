@@ -1,6 +1,7 @@
 import logging
 from collections.abc import AsyncIterator
 from typing import Annotated
+
 from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine

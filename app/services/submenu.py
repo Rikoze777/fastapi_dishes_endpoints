@@ -61,7 +61,7 @@ class SubmenuService:
         submenu_id: UUID4,
         background_tasks: BackgroundTasks,
     ) -> None:
-        item = await self.repository.delete_submenu(menu_id, submenu_id)
+        await self.repository.delete_submenu(menu_id, submenu_id)
         background_tasks.add_task(
             self.cache.invalidate,
             f'menu_{menu_id}_submenu',

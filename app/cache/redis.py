@@ -1,9 +1,10 @@
 import json
-import redis
 from typing import Any
-from app.config import Config
+
 from fastapi.encoders import jsonable_encoder
 
+import redis
+from app.config import Config
 
 config = Config()
 redis_host = config.REDIS_HOST
@@ -18,7 +19,7 @@ class Cache:
     async def get(self, key: str) -> Any:
         cached_data = self.redis_client.get(key)
         if cached_data:
-            return cached_data.decode("utf-8")
+            return cached_data.decode('utf-8')
         return None
 
     async def set(self, key: str, value: Any) -> None:

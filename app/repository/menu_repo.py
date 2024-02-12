@@ -1,12 +1,14 @@
 from pydantic import UUID4
 from sqlalchemy import func
 from sqlalchemy.future import select
-from sqlalchemy.sql import label
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql import label
+
 from app.database.db import AsyncSession as AppAsyncSession
 from app.database.models import Dishes, Menu, Submenu
 from app.repository.exceptions import MenuExistsException
-from app.schemas.schemas import MenuCreate, MenuItem, MenuUpdate, Menu as MenuModel
+from app.schemas.schemas import Menu as MenuModel
+from app.schemas.schemas import MenuCreate, MenuItem, MenuUpdate
 
 
 class MenuRepository:
@@ -22,8 +24,8 @@ class MenuRepository:
             statement = (
                 select(
                     Menu,
-                    label("submenu_count", func.count(Submenu.id.distinct())),
-                    label("dishes_count", func.count(Dishes.id)),
+                    label('submenu_count', func.count(Submenu.id.distinct())),
+                    label('dishes_count', func.count(Dishes.id)),
                 )
                 .filter(Menu.id == menu_id)
                 .outerjoin(Submenu, Menu.id == Submenu.menu_id)
@@ -36,11 +38,11 @@ class MenuRepository:
             except TypeError:
                 raise MenuExistsException()
             menu_dict = {
-                "id": menu.id,
-                "title": menu.title,
-                "description": menu.description,
-                "submenus_count": submenu_count,
-                "dishes_count": dishes_count,
+                'id': menu.id,
+                'title': menu.title,
+                'description': menu.description,
+                'submenus_count': submenu_count,
+                'dishes_count': dishes_count,
             }
             return MenuModel.model_validate(menu_dict)
 
