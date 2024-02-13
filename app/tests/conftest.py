@@ -6,6 +6,7 @@ from httpx import AsyncClient
 from pydantic import UUID4
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy_utils import create_database, database_exists
 
 from app.cache.redis import cache_instance
 from app.config import Config
@@ -18,6 +19,9 @@ testbase_url = config.TESTBASE_URL_ASYNC
 postgres_connection_url = config.TESTBASE_URL
 
 test_engine = create_async_engine(url=testbase_url, poolclass=NullPool, echo=True)
+Base.metadata.bind = test_engine
+if not database_exists(target_db):
+    create_database(target_db)
 test_session_maker = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
@@ -25,7 +29,6 @@ test_session_maker = async_sessionmaker(
     autoflush=False,
     autocommit=False,
 )
-Base.metadata.bind = test_engine
 
 
 async def override_scoped_session() -> AsyncIterator[async_sessionmaker]:
@@ -33,6 +36,7 @@ async def override_scoped_session() -> AsyncIterator[async_sessionmaker]:
 
 
 app.dependency_overrides[get_session] = override_scoped_session
+Base.metadata.bind = test_engine
 
 
 @pytest.fixture

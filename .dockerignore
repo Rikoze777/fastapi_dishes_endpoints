@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache
 .venv
 redis
+.mypy_cache
+.pytest_cache
+.vscode

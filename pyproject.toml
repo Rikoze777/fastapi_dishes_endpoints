@@ -22,6 +22,7 @@ pandas = "2.0"
 openpyxl = "^3.1.2"
 celery = "^5.3.6"
 asyncpg = "^0.29.0"
+sqlalchemy-utils = "^0.41.1"
 
 [tool.poetry.dev-dependencies]
 

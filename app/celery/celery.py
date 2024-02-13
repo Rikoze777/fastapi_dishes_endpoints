@@ -161,7 +161,7 @@ def run_update_database(data: list) -> None:
 
 
 @celery_app.task
-def update_database() -> None:
+def pandas_update_database() -> None:
     if Path(admin_file).exists():
         new_hash = calculate_file_hash()
         if not Path.exists(hash_file):
