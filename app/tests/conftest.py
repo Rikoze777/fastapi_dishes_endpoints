@@ -4,9 +4,9 @@ from typing import AsyncGenerator, AsyncIterator
 import pytest
 from httpx import AsyncClient
 from pydantic import UUID4
-from sqlalchemy import NullPool
+from sqlalchemy import NullPool, create_engine, text
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy_utils import create_database, database_exists
 
 from app.cache.redis import cache_instance
 from app.config import Config
@@ -18,10 +18,45 @@ target_db = config.POSTGRES_DB_TEST
 testbase_url = config.TESTBASE_URL_ASYNC
 postgres_connection_url = config.TESTBASE_URL
 
+
+def db_prep():
+    print('dropping the old test db…')
+    sync_engine = create_engine(postgres_connection_url)
+    conn = sync_engine.connect()
+    try:
+        conn = conn.execution_options(autocommit=False)
+        conn.execute(text('ROLLBACK'))
+        conn.execute(text(f'DROP DATABASE {target_db}'))
+    except ProgrammingError:
+        print('Could not drop the database, probably does not exist.')
+        conn.execute(text('ROLLBACK'))
+    except OperationalError:
+        print(
+            "Could not drop database because it's being accessed by other users (psql prompt open?)"
+        )
+        conn.execute(text('ROLLBACK'))
+    print(f'test db dropped! about to create {target_db}')
+    conn.execute(text(f'CREATE DATABASE {target_db}'))
+    try:
+        conn.execute(
+            text(
+                f"create user {config.POSTGRES_USER} with encrypted password '{config.POSTGRES_PASSWORD}'"
+            )
+        )
+    except Exception:
+        print('User already exists.')
+        conn.execute(
+            text(
+                f'grant all privileges on database {target_db} to {config.POSTGRES_USER}'
+            )
+        )
+    conn.close()
+    print('test db created')
+
+
 test_engine = create_async_engine(url=testbase_url, poolclass=NullPool, echo=True)
 Base.metadata.bind = test_engine
-if not database_exists(target_db):
-    create_database(target_db)
+
 test_session_maker = async_sessionmaker(
     bind=test_engine,
     class_=AsyncSession,
@@ -51,6 +86,7 @@ def prepare_cache():
 
 @pytest.fixture(autouse=True, scope='session')
 async def prepare_database():
+    db_prep()
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield

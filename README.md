@@ -77,7 +77,7 @@ make run
 
 - Для запуска приложения выполните команду:
 ```bash
-docker-compose up --build dishes-app
+docker-compose up --build dishes-app celery-beat
 ```
 
 - Для запуска тестов в выполните команду:

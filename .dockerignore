@@ -1,10 +1,12 @@
 __pycache__/
+/__pycache__/
+__pycache__
 .git
 .cache
 *.md
-.pytest_cache
-.venv
+.pytest_cache/
+.venv/
 redis
-.mypy_cache
-.pytest_cache
-.vscode
+.mypy_cache/
+.vscode/
+.pre-commit-config.yaml

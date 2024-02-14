@@ -12,6 +12,8 @@ services:
         condition: service_healthy
       dishes-app-redis:
         condition: service_healthy
+      rabbitmq-app:
+          condition: service_healthy
 
   dishes-app-test:
     build: .
@@ -55,9 +57,10 @@ services:
       timeout: 20s
       retries: 100
 
-  rabbitmq:
+  rabbitmq-app:
     container_name: rabbitmq
     image: rabbitmq:latest
+    restart: always
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -65,7 +68,8 @@ services:
       - .env
     ports:
       - "5672:5672"
-      - "15672:15672"
+    volumes:
+      - rabbitmq-app-data:/var/lib/rabbitmq
     healthcheck:
       test: [ "CMD", "rabbitmqctl", "status" ]
       interval: 5s
@@ -73,41 +77,31 @@ services:
       retries: 3
 
   celery-worker:
-    container_name: celery_worker
-    build: .
+    build:
+      context: .
     env_file:
       - .env
-    volumes:
-      - ./:/app
-    command: celery -A celery.celery worker
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      dishes-app-redis:
-        condition: service_started
-      dishes-app:
-        condition: service_started
-
-  celery-beat:
-    container_name: celery_beat
-    build: .
-    env_file:
-      - .env
-    volumes:
-      - ./:/app
-    command: celery -A celery.celery beat
+    command: [ "celery", "--app=app.celery.celery", "worker", "-l", "INFO" ]
     depends_on:
       dishes-app-db:
         condition: service_healthy
       dishes-app-redis:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      dishes-app:
+      rabbitmq-app:
+          condition: service_healthy
+
+
+  celery-beat:
+    build:
+      context: .
+    env_file:
+      - .env
+    command: [ "celery", "--app=app.celery.celery", "beat" ]
+    depends_on:
+      celery-worker:
         condition: service_started
 
 volumes:
   dishes-app-db-data:
   dishes-app-redis:
-  celery-worker:
-  celery-beat:
+  rabbitmq-app-data:

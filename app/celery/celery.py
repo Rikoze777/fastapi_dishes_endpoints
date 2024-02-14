@@ -1,5 +1,6 @@
 import hashlib
 import json
+import uuid
 from datetime import timedelta
 from operator import mul
 from pathlib import Path
@@ -28,8 +29,8 @@ celery_app.conf.result_backend = 'rpc://'
 celery_app.conf.broker_connection_retry_on_startup = True
 
 celery_app.conf.beat_schedule = {
-    'pandas_update_database': {
-        'task': 'app.celery.tasks.update_database',
+    'update_database': {
+        'task': 'app.celery.celery.update_database',
         'schedule': timedelta(seconds=15),
     },
 }
@@ -76,6 +77,7 @@ def excel_to_json(
         'title': {},
         'description': {},
         'price': {},
+        'discount': {},
     }
 
     menu_count, sub_count, dish_count = 0, 0, 0
@@ -85,22 +87,22 @@ def excel_to_json(
 
     for row in array:
         if bool(row[0]) and bool(row[1]):
-            current_menu_id = row[0]
-            menu_json['id'][menu_count] = row[0]
+            current_menu_id = str(uuid.UUID(int=row[0]))
+            menu_json['id'][menu_count] = current_menu_id
             menu_json['title'][menu_count] = row[1]
             menu_json['description'][menu_count] = row[2]
             menu_count += 1
 
         elif bool(row[0]) is False and bool(row[1]):
-            current_sub_id = row[1]
-            submenu_json['id'][sub_count] = row[1]
+            current_sub_id = str(uuid.UUID(int=row[1]))
+            submenu_json['id'][sub_count] = current_sub_id
             submenu_json['menu_id'][sub_count] = current_menu_id
             submenu_json['title'][sub_count] = row[2]
             submenu_json['description'][sub_count] = row[3]
             sub_count += 1
 
         elif bool(row[0]) is False and bool(row[1]) is False:
-            dish_json['id'][dish_count] = row[2]
+            dish_json['id'][dish_count] = str(uuid.UUID(int=row[2]))
             dish_json['submenu_id'][dish_count] = current_sub_id
             dish_json['title'][dish_count] = row[3]
             dish_json['description'][dish_count] = row[4]
@@ -111,12 +113,17 @@ def excel_to_json(
 
 
 def run_update_database(data: list) -> None:
+    count = 1
     menus_data, submenus_data, dishes_data = excel_to_json(data)
-    menus_data['price'] = mul(menus_data['price'], menus_data['discount']) / 100
-    submenus_data['price'] = (
-        mul(submenus_data['price'], submenus_data['discount']) / 100
-    )
-    dishes_data['price'] = mul(dishes_data['price'], dishes_data['discount']) / 100
+
+    for price, discount in zip(
+        dishes_data['price'].copy().values(), dishes_data['discount'].copy().values()
+    ):
+        price = int(price)
+        discount = int(discount)
+        dishes_data['price'][str(count)] = mul(price, discount) / 100
+        count += 1
+    del dishes_data['discount']
     dish_df = pd.read_json(json.dumps(dishes_data))
     dish_df.to_sql(
         'dishes',
@@ -134,7 +141,7 @@ def run_update_database(data: list) -> None:
 
     submenu_df = pd.read_json(json.dumps(submenus_data))
     submenu_df.to_sql(
-        'submenus',
+        'submenu',
         engine,
         if_exists='replace',
         index=False,
@@ -148,7 +155,7 @@ def run_update_database(data: list) -> None:
 
     menu_df = pd.read_json(json.dumps(menus_data))
     menu_df.to_sql(
-        'menus',
+        'menu',
         engine,
         if_exists='replace',
         index=False,
@@ -161,7 +168,7 @@ def run_update_database(data: list) -> None:
 
 
 @celery_app.task
-def pandas_update_database() -> None:
+def update_database() -> None:
     if Path(admin_file).exists():
         new_hash = calculate_file_hash()
         if not Path.exists(hash_file):

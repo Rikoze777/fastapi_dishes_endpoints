@@ -6,7 +6,6 @@ from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy_utils import create_database, database_exists
 
 from app.config import Config
 
