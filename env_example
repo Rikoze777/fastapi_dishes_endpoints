@@ -8,7 +8,7 @@ POSTGRES_PORT=5433
 REDIS_HOST="dishes-app-redis"
 REDIS_PORT=6379
 POSTGRES_URL="postgresql://riko:qwerty@dishes-app-db:5432/menu"
-TESTBASE_URL="postgresql://riko:qwerty@dishes-app-db:5432/dishes_test"
+TESTBASE_URL="postgresql+psycopg2://riko:qwerty@dishes-app-db:5432/menu"
 TESTBASE_URL_ASYNC="postgresql+asyncpg://riko:qwerty@dishes-app-db:5432/dishes_test"
 ENGINE_URL="postgresql+asyncpg://riko:qwerty@dishes-app-db:5432/menu"
 RABBITMQ_HOST="rabbitmq"
@@ -16,18 +16,17 @@ RABBITMQ_PORT=5672
 RABBITMQ_USER="guest"
 RABBITMQ_PASS="guest"
 BROKER_URL="amqp://guest:guest@5672:rabbitmq//"
-
-# for localhost
+#LOCAL
 POSTGRES_DB="menu"
 POSTGRES_USER="riko"
 POSTGRES_PASSWORD="qwerty"
 POSTGRES_DB_TEST="dishes_test"
 POSTGRES_HOST="localhost"
-POSTGRES_PORT=5433
+POSTGRES_PORT=5432
 REDIS_HOST="127.0.0.1"
 REDIS_PORT=6379
 POSTGRES_URL="postgresql://riko:qwerty@localhost:5432/menu"
-TESTBASE_URL="postgresql://riko:qwerty@localhost:5432/dishes_test"
+TESTBASE_URL="postgresql+psycopg2://riko:qwerty@localhost:5432/menu"
 TESTBASE_URL_ASYNC="postgresql+asyncpg://riko:qwerty@localhost:5432/dishes_test"
 ENGINE_URL="postgresql+asyncpg://riko:qwerty@localhost:5432/menu"
 RABBITMQ_HOST="rabbitmq"

@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 config = Config()
 redis_host = config.REDIS_HOST
 redis_port = config.REDIS_PORT
+test_url = config.TESTBASE_URL
 
 
 class Base(DeclarativeBase):

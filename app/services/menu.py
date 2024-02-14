@@ -71,6 +71,6 @@ class MenuService:
         }
         return menu_dict
 
-    async def get_all_menus(self):
+    async def get_all_menus(self) -> list:
         all_menus = await self.repository.get_all_menus()
         return all_menus

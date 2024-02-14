@@ -79,7 +79,7 @@ class MenuRepository:
             await db_session.delete(db_menu)
             await db_session.commit()
 
-    async def get_all_menus(self):
+    async def get_all_menus(self) -> list:
         async with self.async_session.begin() as db_session:
             menus = select(Menu).options(
                 selectinload(Menu.submenus).selectinload(Submenu.dishes)

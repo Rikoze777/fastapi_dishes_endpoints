@@ -24,6 +24,16 @@ router = APIRouter(
 async def get_submenu_list(
     menu_id: UUID4, submenu: SubmenuService = Depends()
 ) -> list[Submenu]:
+    """
+    Asynchronously retrieves a list of submenus for the given menu_id.
+
+    Args:
+        menu_id (UUID4): The ID of the menu for which the submenus are being retrieved.
+        submenu (SubmenuService): An instance of SubmenuService obtained from the dependency injection system.
+
+    Returns:
+        list[Submenu]: A list of submenus associated with the given menu_id.
+    """
     return await submenu.get_submenu_list(menu_id)
 
 
@@ -39,6 +49,18 @@ async def add_submenu(
     background_tasks: BackgroundTasks,
     submenu: SubmenuService = Depends(),
 ) -> dict[Submenu, Any]:
+    """
+    Async function to add a submenu to a menu.
+
+    Args:
+        menu_id (UUID4): The ID of the menu to which the submenu will be added.
+        data (SubmenuCreate): The data for creating the submenu.
+        background_tasks (BackgroundTasks): Background tasks to be run.
+        submenu (SubmenuService, optional): The service for interacting with submenus. Defaults to None.
+
+    Returns:
+        dict[Submenu, Any]: The created submenu.
+    """
     return await submenu.create(menu_id, data, background_tasks)
 
 
@@ -51,6 +73,15 @@ async def add_submenu(
 async def get_submenu(
     menu_id: UUID4, submenu_id: UUID4, submenu: SubmenuService = Depends()
 ) -> dict[Submenu, Any]:
+    """
+    A function to get a submenu by menu_id and submenu_id using SubmenuService dependency.
+    Parameters:
+        - menu_id: UUID4
+        - submenu_id: UUID4
+        - submenu: SubmenuService
+    Returns:
+        - dict[Submenu, Any]
+    """
     try:
         result = await submenu.get(menu_id, submenu_id)
     except SubmenuExistsException:
@@ -71,6 +102,19 @@ async def update_submenu(
     background_tasks: BackgroundTasks,
     submenu: SubmenuService = Depends(),
 ) -> type[Submenu]:
+    """
+    A function to update a submenu with the specified menu_id, submenu_id, and data using BackgroundTasks, and return the updated submenu.
+
+    Parameters:
+        menu_id: UUID4 - The ID of the menu
+        submenu_id: UUID4 - The ID of the submenu to be updated
+        data: schemas.SubmenuUpdate - The data to update the submenu
+        background_tasks: BackgroundTasks - Background tasks to be used
+        submenu: SubmenuService - The service for managing submenus
+
+    Returns:
+        type[Submenu]: The updated submenu
+    """
     try:
         await submenu.get(menu_id, submenu_id)
     except SubmenuExistsException:
@@ -90,6 +134,11 @@ async def delete_submenu(
     background_tasks: BackgroundTasks,
     submenu: SubmenuService = Depends(),
 ) -> JSONResponse:
+    """
+    A function to delete a submenu with the given menu_id and submenu_id.
+    It takes in the menu_id, submenu_id, background_tasks, and submenu as parameters.
+    It returns a JSONResponse with a status code of 200 and content indicating the status of the deletion.
+    """
 
     await submenu.delete(menu_id, submenu_id, background_tasks)
     return JSONResponse(
