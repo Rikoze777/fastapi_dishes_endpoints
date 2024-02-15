@@ -1,4 +1,4 @@
-# home_task_fastapi_1
+#  fastapi_dishes_endpoints
 
 Задание стажировки по реализации REST API по работе с меню ресторана.
 
